@@ -8,7 +8,7 @@
 # -------------------------------------------------------------------
 # - EDITORIAL:   2019-04-19, RS: Created file on thinkreto.
 # -------------------------------------------------------------------
-# - L@ST MODIFIED: 2019-04-19 22:53 on marvin
+# - L@ST MODIFIED: 2019-04-19 23:00 on marvin
 # -------------------------------------------------------------------
 
 
@@ -125,9 +125,9 @@ class ExerciseHandler {
         # Docker log
         $logfile = sprintf("%s/main.log", $userdir);
         if (file_exists($logfile)) {
-            $log = file_get_contents($logfile);
+            $dockerlog = file_get_contents($logfile);
         } else {
-            $log = "# No logs yet ...";
+            $dockerlog = "# No logs yet ...";
         }
 
         ?>
@@ -176,7 +176,7 @@ class ExerciseHandler {
                     <div id="logtab" class="tab-pane fade">
                         <div class="alert alert-info">No message yet ...</div>
                         <br />
-                        <textarea id="log">
+                        <textarea id="dockerlog">
                         <?php print($log); ?>
                         </textarea>
                     </div>

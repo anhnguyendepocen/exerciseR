@@ -42,8 +42,8 @@ $Handler = new ExercisoR();
         var textarea = document.getElementById("script")
         var script   = CodeMirror.fromTextArea(textarea, CMOpts);
         // Code styling/highlighting log tab
-        var textarea = document.getElementById("log");
-        var log      = CodeMirror.fromTextArea(textarea, CMOpts);
+        var textarea  = document.getElementById("dockerlog");
+        var dockerlog = CodeMirror.fromTextArea(textarea, CMOpts);
 
         // File upload functionality
         $('input[type=file]').change(function(){
@@ -94,7 +94,7 @@ $Handler = new ExercisoR();
                     $(".nav-tabs a[href=\"#logtab\"]").tab("show");
                     $(".tab-pane.in.active").removeClass("in active")
                     $("#logtab").addClass("in active")
-                    log.setValue(data.return);
+                    dockerlog.setValue(data.return);
 
                 },
                 error: function(e) {
@@ -114,8 +114,8 @@ $Handler = new ExercisoR();
       </div>
       <ul class="nav navbar-nav">
         <li class="active"><a href="index.php">Exercises</a></li>
-        <li><a href="#">Profile</a></li>
-        <li><a href="#">About</a></li>
+        <li><a href="profile.php">Profile</a></li>
+        <li><a href="about.php">About</a></li>
         <li><?php $Handler->LoginHandler->logout_form(); ?></li>
       </ul>
     </div>
