@@ -1,20 +1,25 @@
 <?php
+
+session_start();
+
 $sucess = false; // Default
-$outfile = "foo.R";
 if ($_FILES["file"]["error"] == UPLOAD_ERR_OK) {
     // basename() may prevent filesystem traversal attacks;
     // further validation/sanitation of the filename may be appropriate
+    //$outfile = $_FILES["file"]["value"];
+    $outfile = sprintF("../%s", $_SESSION["upload_file_destination"]);
     $sucess = move_uploaded_file($_FILES["file"]["tmp_name"], $outfile);
 }
  
 // $output will be converted into JSON 
 if ($sucess) {
-    $output = array("success" => true, "message" => "Success!");
+    $output = array("file" => $_FILES["file"], "success" => true, "message" => "Success!");
     $output["content"] = file_get_contents($outfile);
 } else {
     $output = array("success" => false, "error" => "Failure!");
 }
  
+if (!isset($_GET["_iframeUpload"])) { $_GET["_iframeUpload"] = 0; }
 if (($iframeId = (int)$_GET["_iframeUpload"]) > 0) { //old browser... 
     header("Content-Type: text/html; charset=utf-8");
 ?> 

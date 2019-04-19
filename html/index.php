@@ -3,15 +3,19 @@
 <head>
 <?php
 # Loading the exercise class
-require_once("php/DbHandler.php");
-require_once("php/LoginHandler.php");
-require_once("php/Exercise.php");
+require_once("php/ExercisoR.php");
 
-$DbHandler    = new DbHandler();
-$LoginHandler = new LoginHandler($DbHandler);
+$Handler = new ExercisoR();
 
-# Loading exercise
-$Exercise = new Exercise(1);
+###require_once("php/DbHandler.php");
+###require_once("php/LoginHandler.php");
+###require_once("php/Exercise.php");
+###
+###$DbHandler    = new DbHandler();
+###$LoginHandler = new LoginHandler($DbHandler);
+###
+#### Loading exercise
+###$Exercise = new Exercise(1);
 
 ?>
   <title>Bootstrap Example</title>
@@ -33,7 +37,6 @@ $Exercise = new Exercise(1);
     // http://simpleupload.michaelcbrook.com/
     $(document).ready(function(){
         var textarea = document.getElementById("editor")
-        console.log(textarea)
         var CMOpts = {lineNumbers: true, readOnly: true}
         var editor = CodeMirror.fromTextArea(textarea, CMOpts);
 
@@ -65,37 +68,21 @@ $Exercise = new Exercise(1);
 </head>
 <body>
 
-<div class="container">
-  <?php $LoginHandler->logout_form(); ?>
-  <h1>My First Bootstrap Page</h1>
-
-  <div class="row">
-    <div class="col-sm-6">
-        <h2>Exercise</h2>
-        <?php $Exercise->show(); ?>
+  <nav class="navbar navbar-default">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">exercisoR</a>
+      </div>
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="index.php">Home</a></li>
+        <li><a href="#">Profile</a></li>
+        <li><a href="#">About</a></li>
+        <li><?php $Handler->LoginHandler->logout_form(); ?></li>
+      </ul>
     </div>
-    <div class="col-sm-6">
-        <h2>Upload File</h2>
-        <div id="filename"></div>
-        <div id="progress"></div>
-        <div id="progressBar"></div>
-        <input type="file" name="file">
-    </div>
-  </div>
+  </nav>
 
-  <div class="container">
-    <h3>Your code/script</h3>
-    This is the content of your current script file which will
-    be executed/tested. You can update the file by uploading
-    a new <i>R</i> script.
-      <textarea id="editor">
-# Some demo code
-demo <- function(x) {
-  print(x)
-}
-demo(matrix(1:10, ncol = 5))
-     </textarea>
-  </div>
+  <?php $Handler->show_content(); ?>
 
 </div>
 

@@ -11,6 +11,8 @@ class DbHandler extends SQLite3 {
 
          // Check required tables, create if not yet existing
          $this->_check_table("users");
+         $this->_check_table("exercises");
+         $this->_check_table("exercise_mapping");
     }
 
     private function _check_table($table) {
@@ -23,7 +25,20 @@ class DbHandler extends SQLite3 {
 
     }
 
+    /* Helper function to set up the different sqlite tables.
+     *
+     * Parameters
+     * ==========
+     * table : string
+     *      name of the table to be created
+     *
+     * Returns
+     * =======
+     * No return, throws an error if table cannot be created.
+     */
     private function _create_table($table) {
+
+        // Create users table
         if ($table == "users") {
             $sql = "CREATE TABLE users (\n"
                   ."  user_id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
@@ -31,16 +46,73 @@ class DbHandler extends SQLite3 {
                   ."  password VARCHAR(50) NOT NULL, \n"
                   ."  UNIQUE (username)\n"
                   .")";
-            print($sql);
-            $check = $this->exec($sql);
-            if(!$check) {
-                die(sprintf("Error creating database table \"%s\".", $table));
-            }
+            // Create table
+            if(!$this->exec($sql)) { $this->_create_table_failed($table); }
+
             ## TODO insert demo data
             $this->exec("INSERT INTO users (username, password) VALUES ('reto','reto');");
             $this->exec("INSERT INTO users (username, password) VALUES ('test','test');");
+            $this->exec("INSERT INTO users (username, password) VALUES ('zeileis','zeileis');");
+
+        // Create table which takes up the exercises
+        } else if ($table == "exercises") {
+            $sql = "CREATE TABLE exercises (\n"
+                  ."  exercise_id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+                  ."  name VARCHAR(50) NOT NULL,\n"
+                  ."  description VARCHAR(50) NOT NULL,\n"
+                  ."  user_id INT NOT NULL,\n"
+                  ."  created Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP\n"
+                  .")";
+            // Create table
+            if(!$this->exec($sql)) { $this->_create_table_failed($table); }
+
+            ## TODO insert demo data
+            $this->exec("INSERT INTO exercises (name, description, user_id) "
+                       ."VALUES ('demo exercise', 'This is just a demo entry', 1);");
+            $this->exec("INSERT INTO exercises (name, description, user_id) "
+                       ."VALUES ('second demo entry', 'This is just a demo entry', 1);");
+            $this->exec("INSERT INTO exercises (name, description, user_id) "
+                       ."VALUES ('interest calculation', 'Just some demo entry', 1);");
+
+        // Create mapping table: attribute a specific exercise
+        // to a user
+        } else if ($table == "exercise_mapping") {
+            $sql = "CREATE TABLE exercise_mapping (\n"
+                  ."  mapping_id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+                  ."  user_id NOT NULL,\n"
+                  ."  exercise_id NOT NULL,\n"
+                  ."  hash VARCHAR(20),\n"
+                  ."  created Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,\n"
+                  ."  run_counter INT DEFAULT 0,\n"
+                  ."  run_last DATETIME DEFAULT 0,\n"
+                  ."  status INT DEFAULT 0\n"
+                  .")";
+            // Create table
+            if(!$this->exec($sql)) { $this->_create_table_failed($table); }
+
+            ## TODO insert demo data
+            $sql   = "INSERT INTO exercise_mapping (user_id, exercise_id, hash) "
+                    ."VALUES (%d, %d, '%s');";
+            $users = $this->query("SELECT user_id FROM users;");
+            $now   = date("U");
+            while($u = $users->fetchArray(SQLITE3_NUM)) {
+                $ex    = $this->query("SELECT exercise_id FROM exercises;");
+                while($e = $ex->fetchArray(SQLITE3_NUM)) {
+                    // Generate random hash
+                    $hash = md5(sprintf("u %d e %d", $u[0], $e[0]));
+                    $hash = sprintf("%s-%s-%d", substr($hash, 0, 10), $now, $u[0]);
+                    $this->exec(sprintf($sql, $u[0], $e[0], $hash));
+                }
+            }
+        } else {
+            die(sprintf("No rule to create table \"%s\".", $table));
         }
     }
+    /* Helper function to throw an error. */
+    private function _create_table_failed($name) {
+        die(sprintf("Error creating database table \"%s\".", $table));
+    }
+
 
 }
 

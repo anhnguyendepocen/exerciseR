@@ -7,6 +7,9 @@ class LoginHandler {
 
     function __construct($db, $post = NULL) {
 
+        // Start session
+        session_start();
+
         // Store database object
         $this->db = $db;
 
@@ -17,27 +20,26 @@ class LoginHandler {
         // Logut
         if (property_exists($post, "logout")) {
             $this->logout();
+            $this->show_login_form();
         }
 
         // If $request contains username and password:
         // check if login is valid
         if (property_exists($post, "username") & property_exists($post, "password")) {
-            if(!strlen($post->username) == 0 & !strlen($post->password) == 0) {
-                $check = $this->check_login($post);
+            if (!strlen($post->username) == 0 & !strlen($post->password) == 0) {
+                $user_id = $this->check_login($post);
             }
             // Invalid login
-            if (!$check) {
+            if (is_bool($user_id)) {
                 print("Invalid user name or passsword. Try again.\n");
             } else {
-                session_start();
+                $_SESSION["user_id"] = $user_id;
                 $_SESSION["username"] = $post->username;
             }
         }
 
-        // No session yet? Show login form
-        if(session_id() == '' || !isset($_SESSION)) {
-            $this->show_login_form();
-        }
+        if(!isset($_SESSION["user_id"])) { $this->show_login_form(); }
+
     }
 
     /* Display login form
@@ -73,7 +75,7 @@ class LoginHandler {
 
         $sql = "SELECT user_id FROM users WHERE username = \"%s\" AND password = \"%s\";";
         $res = (object)$this->db->query(sprintf($sql, $post->username, $post->password))->fetchArray();
-        return(property_exists($res, "user_id") ? true : false);
+        return(property_exists($res, "user_id") ? $res->user_id : false);
 
     }
 
