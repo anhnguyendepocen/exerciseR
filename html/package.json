@@ -1,0 +1,20 @@
+{
+  "name": "html",
+  "version": "1.0.0",
+  "description": "interactive interface for exerciseR",
+  "main": "index.js",
+  "dependencies": {
+    "codemirror": "^5.45.0",
+    "node.js": "^0.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Reto Stauffer",
+  "license": "GPL-2.0",
+  "keywords": [
+    "exerciseR",
+    "course"
+  ]
+}
