@@ -38,7 +38,7 @@ $Exercise = new Exercise(1);
         var editor = CodeMirror.fromTextArea(textarea, CMOpts);
 
         $('input[type=file]').change(function(){
-            $(this).simpleUpload("php/upload2.php", {
+            $(this).simpleUpload("php/upload.php", {
             allowedExts: ["R"],
 
             start: function(file){

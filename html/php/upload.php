@@ -1,27 +1,42 @@
 <?php
-/*
- * All of your application logic with $_FILES["file"] goes here.
- * It is important that nothing is outputted yet.
- */
+$sucess = false; // Default
+$outfile = "foo.R";
 if ($_FILES["file"]["error"] == UPLOAD_ERR_OK) {
-    error_log("-----------\n", 3, "log.txt");
-    error_log(print_r($_FILES["file"]), 3, "log.txt");
     // basename() may prevent filesystem traversal attacks;
     // further validation/sanitation of the filename may be appropriate
-    $success = move_uploaded_file($_FILES["file"]["tmp_name"], "foo.R");
-    error_log((string)$success, 0);
-} else {
-    $success = false;
+    $sucess = move_uploaded_file($_FILES["file"]["tmp_name"], $outfile);
 }
-
-// $output will be converted into JSON
-if ($success == 1) {
+ 
+// $output will be converted into JSON 
+if ($sucess) {
     $output = array("success" => true, "message" => "Success!");
+    $output["content"] = file_get_contents($outfile);
 } else {
     $output = array("success" => false, "error" => "Failure!");
 }
-
-header("Content-Type: application/json; charset=utf-8");
-error_log(json_encode($output), 0);
-echo json_encode($output);
-?>
+ 
+if (($iframeId = (int)$_GET["_iframeUpload"]) > 0) { //old browser... 
+    header("Content-Type: text/html; charset=utf-8");
+?> 
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<script type="text/javascript">
+var data = {
+    id: <?php echo $iframeId; ?>,
+    type: "json",
+    data: <?php echo json_encode($output); ?>
+};
+parent.simpleUpload.iframeCallback(data);
+</script> 
+</body>
+</html>
+<?php
+} else { //new browser... 
+    header("Content-Type: application/json; charset=utf-8");
+    echo json_encode($output);
+}
+ 
+?> 
