@@ -36,10 +36,16 @@ $Handler = new ExercisoR();
   <script>
     // http://simpleupload.michaelcbrook.com/
     $(document).ready(function(){
-        var textarea = document.getElementById("editor")
         var CMOpts = {lineNumbers: true, readOnly: true}
-        var editor = CodeMirror.fromTextArea(textarea, CMOpts);
 
+        // Code styling/highlighting script tab
+        var textarea = document.getElementById("script")
+        var script   = CodeMirror.fromTextArea(textarea, CMOpts);
+        // Code styling/highlighting log tab
+        var textarea = document.getElementById("log");
+        var log      = CodeMirror.fromTextArea(textarea, CMOpts);
+
+        // File upload functionality
         $('input[type=file]').change(function(){
             $(this).simpleUpload("php/upload.php", {
             allowedExts: ["R"],
@@ -56,11 +62,44 @@ $Handler = new ExercisoR();
             },
             success: function(data){
                 $('#progress').html("Success!<br>Data: " + data.message); //JSON.stringify(data));
-                editor.setValue(data.content)
+                script.setValue(data.content)
+                $("#btn-run.btn-secondary").prop("disabled", false)
+                    .removeClass("btn-secondary").addClass("btn-success");
             },
             error: function(error){
                 $('#progress').html("Failure!<br>" + error.name + ": " + error.message);
             }
+            });
+        });
+
+        // Run script
+        $("#btn-run").on("click", function() {
+            $.ajax({
+                url: "php/run.php",
+                dataType: "JSON",
+                success: function(data) {
+                    console.log(data.cmd);
+                    if (data.returncode == 0) {
+                        $("#logtab .alert").removeClass().addClass("alert")
+                            .addClass("alert-success").html("Yey");
+                    } else if (data.returncode == 1) {
+                        $("#logtab .alert").removeClass().addClass("alert")
+                            .addClass("alert-warning")
+                            .html("The script runs well, but the result is not correct.")
+                    } else {
+                        $("#logtab .alert").removeClass().addClass("alert")
+                            .addClass("alert-danger")
+                            .html("Something went wrong! Check logs for details.")
+                    }
+                    $(".nav-tabs a[href=\"#logtab\"]").tab("show");
+                    $(".tab-pane.in.active").removeClass("in active")
+                    $("#logtab").addClass("in active")
+                    log.setValue(data.return);
+
+                },
+                error: function(e) {
+                    alert("whoops");
+                }
             });
         });
     });
@@ -74,7 +113,7 @@ $Handler = new ExercisoR();
         <a class="navbar-brand" href="#">exercisoR</a>
       </div>
       <ul class="nav navbar-nav">
-        <li class="active"><a href="index.php">Home</a></li>
+        <li class="active"><a href="index.php">Exercises</a></li>
         <li><a href="#">Profile</a></li>
         <li><a href="#">About</a></li>
         <li><?php $Handler->LoginHandler->logout_form(); ?></li>

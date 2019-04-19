@@ -108,7 +108,6 @@ class ExercisoR {
         // Loading exercise ID
         $sql = "SELECT exercise_id FROM exercise_mapping WHERE hash = \"%s\";";
         $res = $this->DbHandler->query(sprintf($sql, $hash))->fetchArray(SQLITE3_ASSOC);
-        var_dump($res);
 
         if (count($res) == 0) { die("Whoops, problems finding the exercise!"); }
 

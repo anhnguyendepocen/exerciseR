@@ -8,7 +8,7 @@
 # -------------------------------------------------------------------
 # - EDITORIAL:   2019-04-19, RS: Created file on thinkreto.
 # -------------------------------------------------------------------
-# - L@ST MODIFIED: 2019-04-19 17:12 on marvin
+# - L@ST MODIFIED: 2019-04-19 22:53 on marvin
 # -------------------------------------------------------------------
 
 
@@ -98,7 +98,7 @@ class ExerciseHandler {
             if(!$check) { die("Problems creating the directory! Whoops."); }
         }
 
-        $file = sprintf("%s/ex_%d.html", $this->dir, $exercise_id);
+        $file = sprintf("%s/%d/exercise.html", $this->dir, $exercise_id);
         if (!file_exists($file)) {
             die(sprintf("ERROR: Cannot find exercise \"%s\"", $file));
         }
@@ -106,15 +106,30 @@ class ExerciseHandler {
         $exercise = file_get_contents($file);
 
         # Expecting the script here:
-        $file = sprintf("%s/main.R", $userdir);
+        $file    = sprintf("%s/main.R", $userdir);
 
         # Store destination (used in upload.php)
+        $_SESSION["exercise_hash"]           = $hash;
+        $_SESSION["exercise_id"]             = $exercise_id;
         $_SESSION["upload_file_destination"] = $file;
         if (file_exists($file)) {
             $script = file_get_contents($file);
+            $btn_run_class = "btn-success";
+            $btn_run_disabled = false;
         } else {
             $script = "# Nothing uploaded yet!";
+            $btn_run_class = "btn-secondary";
+            $btn_run_disabled = true;
         }
+
+        # Docker log
+        $logfile = sprintf("%s/main.log", $userdir);
+        if (file_exists($logfile)) {
+            $log = file_get_contents($logfile);
+        } else {
+            $log = "# No logs yet ...";
+        }
+
         ?>
         <div class="container">
         
@@ -131,17 +146,40 @@ class ExerciseHandler {
                     This is the content of your current script file which will
                     be executed/tested. You can update the file by uploading
                     a new <i>R</i> script.
-                    <br />
+                </div>
+            </div>
+                <div class="col-sm-6">
                     <h4>Upload File</h4>
                     <div id="filename"></div>
                     <div id="progress"></div>
                     <div id="progressBar"></div>
-                    <input type="file" name="file">
+                    <input type="file" name="file" class="form-control">
                 </div>
-                <div class="col-sm-12" style="padding-top: 2em;">
-                    <textarea id="editor">
-                    <?php print($script); ?>
-                    </textarea>
+                <div class="col-sm-6">
+                    <h4>Run Script</h4>
+                    <button id="btn-run" type="button"
+                        class="btn <?php print $btn_run_class; ?>"
+                        <?php print($btn_run_disabled ? "disabled" : ""); ?>>Run</button>
+                </div>
+            </div>
+            <div class="col-sm-12" style="padding-top: 2em;">
+                <ul class="nav nav-tabs">
+                    <li class="active"><a data-toggle="tab" href="#scripttab">Script</a></li>
+                    <li><a data-toggle="tab" href="#logtab">Log</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div id="scripttab" class="tab-pane fade in active">
+                        <textarea id="script">
+                        <?php print($script); ?>
+                        </textarea>
+                    </div>
+                    <div id="logtab" class="tab-pane fade">
+                        <div class="alert alert-info">No message yet ...</div>
+                        <br />
+                        <textarea id="log">
+                        <?php print($log); ?>
+                        </textarea>
+                    </div>
                 </div>
             </div>
         </div>
