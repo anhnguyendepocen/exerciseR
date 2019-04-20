@@ -14,6 +14,8 @@ class ExerciseR {
         require("ExerciseHandler.php");
         require("LoginHandler.php");
 
+        date_default_timezone_set("UTC");
+
         $this->DbHandler    = new DbHandler();
 
         // Create LoginHandler, does login check on construct
