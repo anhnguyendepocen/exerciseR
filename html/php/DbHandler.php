@@ -68,11 +68,11 @@ class DbHandler extends SQLite3 {
 
             ## TODO insert demo data
             $this->exec("INSERT INTO exercises (name, description, user_id) "
-                       ."VALUES ('demo exercise', 'This is just a demo entry', 1);");
+                       ."VALUES ('Create matrix', 'This is just a demo entry', 1);");
             $this->exec("INSERT INTO exercises (name, description, user_id) "
-                       ."VALUES ('second demo entry', 'This is just a demo entry', 1);");
+                       ."VALUES ('Arithmetic mean with for loop', 'This is just a demo entry', 1);");
             $this->exec("INSERT INTO exercises (name, description, user_id) "
-                       ."VALUES ('interest calculation', 'Just some demo entry', 1);");
+                       ."VALUES ('Find index in character vector', 'Just some demo entry', 1);");
 
         // Create mapping table: attribute a specific exercise
         // to a user
