@@ -7,11 +7,11 @@ class LoginHandler {
 
     function __construct($db, $post = NULL) {
 
-        // Start session
-        session_start();
-
         // Store database object
         $this->db = $db;
+
+        // Start session
+        session_start();
 
         // Store post args
         if (is_null($post)) { $post = $_POST; }
@@ -71,7 +71,7 @@ class LoginHandler {
      * =======
      * Returns boolean true if login is allowed, else false.
      */
-    private function check_login($post) {
+    public function check_login($post) {
 
         $sql = "SELECT user_id FROM users WHERE username = \"%s\" AND password = \"%s\";";
         $res = (object)$this->db->query(sprintf($sql, $post->username, $post->password))->fetchArray();
@@ -85,7 +85,7 @@ class LoginHandler {
         ?>
         <form method="POST">
         <input type="hidden" value="logout" name="logout" />
-        <input type="submit" value="Logout (<?php print($_SESSION["username"]); ?>)" name="submit" /><br />
+        <input class="btn btn-info" type="submit" value="Logout (<?php print($_SESSION["username"]); ?>)" name="submit" /><br />
         </form>
         <?php
     }

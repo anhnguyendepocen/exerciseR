@@ -1,0 +1,34 @@
+---
+output: 
+    html_document:
+        theme: null
+        highlight: null
+---
+
+
+## Arithmetic Mean
+
+To practice `for` loops we will write a function called
+`mymean` which calculates the arithmetic mean of a sequence
+of numeric values.
+
+The arithmetic mean is defined as:
+
+$\bar{x} = \frac{1}{N} \sum_{i = 1}^N (x_i)$
+
+
+The function should take one input argument as follows:
+
+
+```r
+# Example call of your function
+myfun(x)
+```
+
+* Note that the function **has to be named** `mymean`
+* You are not allowed to use the function `mean(...)`, `sum(...)`,
+  or `length(...)`!
+
+_exerciseR_ will check if your function works as expected.
+
+

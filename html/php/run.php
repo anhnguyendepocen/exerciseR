@@ -1,9 +1,25 @@
 <?php
 
-// Get session information
+// Handling login and open database connection
+require("DbHandler.php");
+require("LoginHandler.php");
+
 session_start();
+$DbHandler = new DbHandler("test.db", "../");
+if (!isset($_SESSION["exercise_hash"])) { die("Stop"); }
+
+
+// Get session information
 $exercise_hash = $_SESSION["exercise_hash"];
 $exercise_id   = $_SESSION["exercise_id"];
+
+// Update database
+$res = $DbHandler->query(sprintf("SELECT run_counter FROM exercise_mapping "
+                                  ."WHERE hash = '%s';", $exercise_hash))->fetchArray(SQLITE3_ASSOC);
+$DbHandler->exec(sprintf("UPDATE exercise_mapping SET run_counter = %d, "
+                        ."run_last = %d WHERE hash = '%s';",
+                        (int)$res["run_counter"] + 1, time(), $exercise_hash));
+
 
 // Array which will be returned
 $res = array("hash" => $exercise_hash,
@@ -42,10 +58,18 @@ ob_start();
 system($dockercmd, $returnCode);
 $output = ob_get_clean();
 
+// Update exercise data base status
+$status = $returnCode == 0 ? 9 : 1;
+$DbHandler->exec(sprintf("UPDATE exercise_mapping SET "
+                        ."status = %d WHERE hash = '%s';",
+                        (int)$status, $exercise_hash));
+
 // Write return into log file
 $fid = fopen(sprintf("%s/../%s/main.log", $cwd, $userdir), "w");
 fwrite($fid, $output);
 fclose($fid);
+
+$DbHandler->close();
 
 // Add information to the results array
 $res["returncode"] = $returnCode;

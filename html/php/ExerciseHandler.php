@@ -8,7 +8,7 @@
 # -------------------------------------------------------------------
 # - EDITORIAL:   2019-04-19, RS: Created file on thinkreto.
 # -------------------------------------------------------------------
-# - L@ST MODIFIED: 2019-04-19 23:00 on marvin
+# - L@ST MODIFIED: 2019-04-20 14:05 on marvin
 # -------------------------------------------------------------------
 
 
@@ -41,7 +41,8 @@ class ExerciseHandler {
         $sql = "SELECT em.mapping_id, em.hash, e.name, em.created, em.run_counter, "
               ."em.run_last, em.status FROM exercise_mapping AS em "
               ."LEFT JOIN exercises AS e "
-              ."ON em.exercise_id = e.exercise_id WHERE em.user_id = %d AND em.status %s %d";
+              ."ON em.exercise_id = e.exercise_id WHERE em.user_id = %d AND em.status %s %d "
+              ."ORDER BY em.created DESC;";
         // Open exercises
         $query = $this->db->query(sprintf($sql, $user_id, $operator, $status));
 
@@ -131,58 +132,60 @@ class ExerciseHandler {
         }
 
         ?>
-        <div class="container">
+
+        <div class="row">
+          <div class="col-sm-12">
+              <?php print($exercise); ?>
+          </div>
+        </div>
         
-            <div class="row">
-              <div class="col-sm-12">
-                  <h2>Exercise</h2>
-                  <?php print($exercise); ?>
-              </div>
+        <div class="row" style="margin-top: 2em;">
+            <div class="col-sm-6">
+                <h4>Upload R Script</h4>
+                <div id="filename"></div>
+                <div id="progress"></div>
+                <div id="progressBar"></div>
+                <input type="file" name="file" class="form-control-file border" />
             </div>
-        
-            <div class="row">
-                <div class="col-sm-12">
-                    <h2>Your code/script</h2>
-                    This is the content of your current script file which will
-                    be executed/tested. You can update the file by uploading
-                    a new <i>R</i> script.
-                </div>
+            <div class="col-sm-6">
+                <h4>Run the Script</h4>
+                <button id="btn-run" type="button"
+                    class="btn <?php print $btn_run_class; ?>"
+                    <?php print($btn_run_disabled ? "disabled" : ""); ?>>Run</button>
             </div>
-                <div class="col-sm-6">
-                    <h4>Upload File</h4>
-                    <div id="filename"></div>
-                    <div id="progress"></div>
-                    <div id="progressBar"></div>
-                    <input type="file" name="file" class="form-control">
+        </div>
+
+        <div class="row" style="margin-top: 2em;">
+            <!-- tab navigation -->
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" href="#scripttab">Script</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#logtab">Log</a>
+                </li>
+            </ul>
+            <br />
+
+            <!-- tab contents -->
+            <div class="tab-content" style="width: 100%; float: none;">
+                <div class="tab-pane container active" id="scripttab">
+                    This is the content of your R script:
+                    <textarea id="script">
+                    <?php print($script); ?>
+                    </textarea>
                 </div>
-                <div class="col-sm-6">
-                    <h4>Run Script</h4>
-                    <button id="btn-run" type="button"
-                        class="btn <?php print $btn_run_class; ?>"
-                        <?php print($btn_run_disabled ? "disabled" : ""); ?>>Run</button>
-                </div>
-            </div>
-            <div class="col-sm-12" style="padding-top: 2em;">
-                <ul class="nav nav-tabs">
-                    <li class="active"><a data-toggle="tab" href="#scripttab">Script</a></li>
-                    <li><a data-toggle="tab" href="#logtab">Log</a></li>
-                </ul>
-                <div class="tab-content">
-                    <div id="scripttab" class="tab-pane fade in active">
-                        <textarea id="script">
-                        <?php print($script); ?>
-                        </textarea>
-                    </div>
-                    <div id="logtab" class="tab-pane fade">
-                        <div class="alert alert-info">No message yet ...</div>
-                        <br />
-                        <textarea id="dockerlog">
-                        <?php print($log); ?>
-                        </textarea>
-                    </div>
+                <div class="tab-pane container fade" id="logtab">
+                    <div class="alert alert-info">No message yet ...</div>
+                    <br />
+                    <textarea id="dockerlog">
+                    <?php print($dockerlog); ?>
+                    </textarea>
                 </div>
             </div>
         </div>
+
+
         <?php
     }
 
