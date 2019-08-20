@@ -7,14 +7,16 @@ class ExerciseR {
     public $DbHandler    = NULL;
     public $LoginHandler = NULL;
     private $post = NULL;
+    private $config = NULL;
 
-    function __construct() {
+    function __construct($config) {
 
         require("DbHandler.php");
         require("ExerciseHandler.php");
         require("LoginHandler.php");
 
         date_default_timezone_set("UTC");
+        $this->config       = $config;
 
         $this->DbHandler    = new DbHandler();
 
@@ -22,7 +24,7 @@ class ExerciseR {
         $this->LoginHandler = new LoginHandler($this->DbHandler);
 
         // Exercise handler
-        $this->ExerciseHandler = new ExerciseHandler($this->DbHandler);
+        $this->ExerciseHandler = new ExerciseHandler($config, $this->DbHandler);
 
         // Store _POST object
         $this->post = (object)$_POST;

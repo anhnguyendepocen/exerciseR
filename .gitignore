@@ -2,3 +2,5 @@
 
 # Ignore uploads/exercises/databases
 files/*
+# Expect the config file
+!files/config.ini

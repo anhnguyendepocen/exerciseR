@@ -8,7 +8,7 @@
 # -------------------------------------------------------------------
 # - EDITORIAL:   2019-04-19, RS: Created file on thinkreto.
 # -------------------------------------------------------------------
-# - L@ST MODIFIED: 2019-04-20 14:05 on marvin
+# - L@ST MODIFIED: 2019-08-20 17:49 on marvin
 # -------------------------------------------------------------------
 
 
@@ -17,18 +17,18 @@ class ExerciseHandler {
     private $dir;
     private $exerciseStr = "Exercise not loaded yet";
     private $db = NULL;
+    private $config = NULL;
 
-    function __construct($db, $dir = "exercises") {
-        # Store exercise ID
-        $this->dir = $dir;
-        $this->db  = $db;
+    function __construct($config, $db) {
+        $this->config = $config;
+        $this->db     = $db;
 
     }
 
     function __toString() {
         $msg = "";
         //$msg += sprintf("Exercise ID:  %d\n", $this->id);
-        $msg += sprintf("Exercise dir: %s\n", $this->dir);
+        $msg += sprintf("Exercise dir: %s\n", $this->config->get("path", "exercises"));
         return($msg);
     }
 
@@ -93,13 +93,14 @@ class ExerciseHandler {
     public function show_exercise($hash, $exercise_id) {
 
         // Exercise directory
-        $userdir  = sprintf("uploads/user-%d/%s", $_SESSION["user_id"], $hash);
+        $userdir  = sprintf("%s/user-%d/%s", $this->config->get("path", "uploads"),
+                            $_SESSION["user_id"], $hash);
         if(!is_dir($userdir)) {
             $check = mkdir($userdir, 0777, true);
             if(!$check) { die("Problems creating the directory! Whoops."); }
         }
 
-        $file = sprintf("%s/%d/exercise.html", $this->dir, $exercise_id);
+        $file = sprintf("%s/%d/exercise.html", $this->config->get("path", "exercises"), $exercise_id);
         if (!file_exists($file)) {
             die(sprintf("ERROR: Cannot find exercise \"%s\"", $file));
         }

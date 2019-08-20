@@ -1,7 +1,11 @@
 <?php
+# Loading required config
+require_once("php/ConfigParser.php");
+$config = new ConfigParser("../files/config.ini");
+
 # Loading the exercise class
 require_once("php/ExerciseR.php");
-$Handler = new ExerciseR();
+$Handler = new ExerciseR($config);
 $Handler->site_show_header();
 ?>
 
