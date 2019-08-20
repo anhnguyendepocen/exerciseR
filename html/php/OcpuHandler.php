@@ -1,0 +1,141 @@
+<?php
+
+class OcpuHandler {
+
+
+    private $server_url  = "localhost:5656";
+    // The function to be called
+    //private $server_path = "ocpu/library";
+    private $server_fun  = "ocpu/library/exerciser/R/check_exercise";
+    private $result = NULL;
+
+    private $exercise_dir = NULL;
+
+    function __construct($dir, $exercise_id, $exercise_hash) {
+        
+        if (!is_dir($dir)) {
+            $this->result = array("error" => sprintf("Exercise directory \"%s\" not found", $dir));
+            return;
+        }
+
+        # Fetching hash
+        $ret = $this->_curl_exec_test($dir, (int)$exercise_id, $exercise_hash);
+        if (!$ret) {
+            error_log("[error] Did not get opencpu execution hash!", 0);
+            $this->result = array("error" => "Problems connecting opencpu/get opencpu hash.");
+            return;
+        }
+
+        # If this worked: extract hash
+        $hash = $this->_extract_hash($ret);
+        if (!$hash) {
+            $this->result = array("error" => "Problems extracting the temporary hash.");
+            return;
+        }
+
+        # Loading console output
+        $this->result = $this->_curl_get_console($hash->path);
+
+    }
+
+    public function has_result() {
+        // no data
+        if (is_null($this->result)) {
+            return(false);
+        // fetched error message
+        } else if (in_array("error", array_keys($this->result))) {
+            return(false);
+        } else {
+            return(true);
+        }
+    }
+
+    public function get_result() {
+        if (!is_null($this->result)) {
+            return($this->result);
+        } else {
+            return(array("error" => "No information loaded so far."));
+        }
+    }
+
+    public function show() {
+        print(json_encode($this->get_result()));
+    }
+
+    private function _curl_exec_test($dir, $exercise_id, $exercise_hash) {
+
+        # OpenCPU url
+        $url        = sprintf("%s/%s", $this->server_url, $this->server_fun);
+
+        # Curl data sent (POST)
+        $curl_data  = sprintf("dir=\"%s\"",            $dir);       # where we have the file
+        $curl_data .= sprintf("&exercise_id=%d",       $exercise_id);   # Exercise ID
+        $curl_data .= sprintf("&exercise_hash=\"%s\"", $exercise_hash); # User exercise hash
+
+        $curl_args = array(CURLOPT_URL            => $url,
+                           CURLOPT_CUSTOMREQUEST  => "POST",
+                           CURLOPT_RETURNTRANSFER => true,
+                           CURLOPT_POST           => true,
+                           CURLOPT_POSTFIELDS     => $curl_data);
+
+        print("============= curl call ==============\n");
+        print_r($curl_args);
+        // Use CURL to run the script.
+        $curl = curl_init();
+        curl_setopt_array($curl, $curl_args);
+        $response = curl_exec($curl);
+        curl_close($curl);
+        var_dump($response);
+        print("=========== end curl call ============\n");
+        return($response);
+    }
+
+    //private function _curl_exec_script($file) {
+    //    $url       = sprintf("%s/%s/%s", $this->server_url, $this->server_path, $file);
+    //    $curl_args = array(CURLOPT_URL => $url,
+    //                       CURLOPT_CUSTOMREQUEST => "POST",
+    //                       CURLOPT_RETURNTRANSFER => true);
+
+    //    // Use CURL to run the script.
+    //    $curl = curl_init();
+    //    curl_setopt_array($curl, $curl_args);
+    //    $response = curl_exec($curl);
+    //    curl_close($curl);
+    //    return($response);
+    //}
+
+    private function _extract_hash($ret) {
+        // Extract temporary hash
+        preg_match("/ocpu\/tmp\/([\w]+)\/console/", $ret, $matches); 
+        if (count($matches) != 2) {
+            return(false);
+        } else {
+            $tmp = new stdClass();
+            $tmp->path = $matches[0];
+            $tmp->hash = $matches[1];
+            return($tmp);
+        }
+    }
+
+
+    private function _curl_get_console($file) {
+    // -----------------------------------------------
+    // Fetch console output
+        $url = sprintf("%s/%s/text", $this->server_url, $file);
+        $curl_args = array(CURLOPT_URL => $url,
+                           CURLOPT_CUSTOMREQUEST => "POST",
+                           CURLOPT_RETURNTRANSFER => true);
+        $curl = curl_init();
+        curl_setopt_array($curl, $curl_args);
+        $response = curl_exec($curl);
+        curl_close($curl);
+        return(array("console" => $response));
+    }
+
+}
+
+//$obj = new OcpuHandler();
+//$obj->show();
+
+
+

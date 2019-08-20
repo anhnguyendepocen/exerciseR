@@ -1,0 +1,10 @@
+Package: exerciser
+Type: Package
+Title: Serves exercises for opencpu interface exerciseR
+Version: 0.0-1
+Date: 2019-07-04
+Author: Reto Stauffer
+Maintainer: Reto Stauffer <Reto.Stauffer@uibk.ac.at> 
+Description: Serves the scripts for opencpu script execution calls via API.
+License: GPL-2
+RoxygenNote: 6.1.1

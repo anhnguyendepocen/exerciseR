@@ -3,15 +3,24 @@
 // Handling login and open database connection
 require("DbHandler.php");
 require("LoginHandler.php");
+require("OcpuHandler.php");
 
 session_start();
 $DbHandler = new DbHandler("test.db", "../");
-if (!isset($_SESSION["exercise_hash"])) { die("Stop"); }
+#if (!isset($_SESSION["exercise_hash"])) {
+#    print(json_encode(array("error" => "exercise_hash not found")));
+#    die(0);
+#}
+
+#// Get session information
+#$exercise_hash = $_SESSION["exercise_hash"];
+#$exercise_id   = $_SESSION["exercise_id"];
+#$user_id       = $_SESSION["user_id"];
 
 
-// Get session information
-$exercise_hash = $_SESSION["exercise_hash"];
-$exercise_id   = $_SESSION["exercise_id"];
+$exercise_hash = "69999d02a5-1555679436-1";
+$exercise_id   = 2;
+$user_id       = 1;
 
 // Update database
 $res = $DbHandler->query(sprintf("SELECT run_counter FROM exercise_mapping "
@@ -22,58 +31,52 @@ $DbHandler->exec(sprintf("UPDATE exercise_mapping SET run_counter = %d, "
 
 
 // Array which will be returned
-$res = array("hash" => $exercise_hash,
-             "id"   => $exercise_id);
+$res = array("hash" => $exercise_hash, "id" => $exercise_id);
 
 // Generate required paths
-$volume  = sprintf("/voluem/%s", $exercise_hash);
-$userdir = sprintf("uploads/user-%d/%s", $_SESSION["user_id"], $exercise_hash);
 $cwd = getcwd();
+$dir          = sprintf("%s/../../files", $cwd);
+#$user_dir     = sprintf("%s/../uploads/user-%d/%s", $cwd, $user_id, $exercise_hash);
+#$exercise_dir = sprintf("%s/../exercises", $cwd);
 
 
-// Check for some characters to avoid injections.
-function prevent_injection($x) {
-    $check =  preg_match("/\ |;|:|\n|\r|\t|'|\"/i", $x);
-    if ($check != 0) { die(sprintf("ERROR: found suspicious characters (%s)!", $x)); }
-}
-prevent_injection($volume);
-prevent_injection($userdir);
-prevent_injection($cwd);
-prevent_injection($exercise_hash);
+// Some logging
+$fid = fopen(sprintf("%s/main.log", $dir), "w");
+fwrite($fid, "Calling opencpu");
+fclose($fid);
+$log = fopen("test.log", "w");
+fwrite($log, "Calling opencpu\n");
 
-// Create docker command
-// Execution requires sudoers permissions, e.g.,
-// add the following line to "/etc/sudoers".
-// retos ALL=(ALL) NOPASSWD: /usr/bin/docker
-$dockercmd = "sudo docker run -ti --rm -v \"%s/../exercises/%d\":/check "
-            ."-v \"%s/../uploads/user-%d/%s\":/tocheck "
-            ."-w /check -u docker r-base Rscript check.R";
-$dockercmd = sprintf($dockercmd, $cwd, $exercise_id,
-                     $cwd, $_SESSION["user_id"], $exercise_hash);
-$res["cmd"] = $dockercmd;
+$ocpu = new OcpuHandler($dir, $exercise_id, $exercise_hash);
 
-// Calling docker, fetch return
-ob_start();
-#system("ls -l", $returnCode);
-system($dockercmd, $returnCode);
-$output = ob_get_clean();
+fwrite($log, "Object initialized\n");
+fwrite($log, json_encode($ocpu->get_result()));
+fclose($log);
+
 
 // Update exercise data base status
-$status = $returnCode == 0 ? 9 : 1;
+$status = $ocpu->has_result() ? 1 : 9;
 $DbHandler->exec(sprintf("UPDATE exercise_mapping SET "
                         ."status = %d WHERE hash = '%s';",
                         (int)$status, $exercise_hash));
 
 // Write return into log file
-$fid = fopen(sprintf("%s/../%s/main.log", $cwd, $userdir), "w");
-fwrite($fid, $output);
+$fid = fopen(sprintf("%s/main.log", $dir), "w");
+fwrite($fid, var_dump($ocpu->get_result()));
 fclose($fid);
 
 $DbHandler->close();
 
+die("development stop");
+
 // Add information to the results array
-$res["returncode"] = $returnCode;
-$res["return"]     = $output;
+print("----------------------------------\n");
+$res["returncode"] = in_array("error", array_keys($ocpu->get_result())) ? 9 : 0;
+foreach($ocpu->get_result() as $key=>$val) { $res[$key] = $val; }
+
+print("----------------------------------\n");
+print($res["console"]);
+print("----------------------------------\n");
 
 print(json_encode($res)); die();
 

@@ -40,9 +40,8 @@ class ExerciseR {
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/exerciseR.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="lib/simpleUpload.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
+    <script src="lib/jquery-3.4.1.min.js"></script>
+    <script src="lib/bootstrap-4.2.1.min.js"></script>
 </head>
 <body>
 
@@ -85,7 +84,7 @@ class ExerciseR {
                     state and more a proof-of-concept
                     than a running tool.<br />
                     <span class="Rlogo"></span>
-                    <span class="dockerlogo"></span>
+                    <span class="opencpulogo"></span>
                 </div>
                 <div class="col-6 text-muted">
                     <b>Contact:</b><br />

@@ -7,8 +7,10 @@ $Handler->site_show_header();
 
   <!-- CodeMirror -->
   <link rel="stylesheet" href="lib/codemirror.css">
+  <script src="lib/opencpu-0.5.js"></script>
   <script src="lib/codemirror.js"></script>
   <script src="lib/r.js"></script>
+  <script src="lib/simpleUpload-1.1.js"></script>
   <script>
     // http://simpleupload.michaelcbrook.com/
     $(document).ready(function(){
@@ -22,8 +24,9 @@ $Handler->site_show_header();
         var dockerlog = CodeMirror.fromTextArea(textarea, CMOpts);
 
         // File upload functionality
-        $('input[type=file]').change(function(){
-            $(this).simpleUpload("php/upload.php", {
+        $("input[type='file']").change(function(){
+            //$(this).simpleUpload("php/upload.php", {
+            $("input[name='file']").simpleUpload("php/upload.php", {
             allowedExts: ["R"],
             start: function(file){
                 //upload started
@@ -74,32 +77,43 @@ $Handler->site_show_header();
                 url: "php/run.php",
                 dataType: "JSON",
                 success: function(data) {
+
+                    console.log("AJAX Response")
+                    console.log(data)
                     console.log(data.cmd);
                     console.log(data.returncode + "  " + data.returnflag)
-                    if (data.returncode == 0) {
-                        $("#logtab .alert").removeClass().addClass("alert")
-                            .addClass("alert-success").html("Perfect, exercise successfully solved!");
+                    console.log(data)
+
+                    // This is an interface issue, not a problem of the solution
+                    if (data.error !== undefined) {
+                        alert(data.error);
                     } else {
-                        $("#logtab .alert").removeClass().addClass("alert")
-                            .addClass("alert-danger")
-                            .html("Something went wrong! Check logs for details.")
+                        if (data.returncode == 0) {
+                            $("#logtab .alert").removeClass().addClass("alert")
+                                .addClass("alert-success").html("Perfect, exercise successfully solved!");
+                        } else {
+                            $("#logtab .alert").removeClass().addClass("alert")
+                                .addClass("alert-danger")
+                                .html("Something went wrong! Check logs for details.")
+                        }
+                        $(".nav-tabs a[href=\"#logtab\"]").tab("show");
+                        $(".tab-pane.in.active").removeClass("in active")
+                        $("#logtab").addClass("in active")
+    
+                        // Remove CodeMirror output, re-create (had some
+                        // problems when just changing content on inactive tabs)
+                        $("#dockerlog").remove();
+                        $("#logtab").find(".CodeMirror").remove()
+                        $("#logtab").append("<textarea id=\"dockerlog\">"
+                            + data.console + "</textarea>");
+                        CodeMirror.fromTextArea(document.getElementById("dockerlog"), CMOpts);
+    
+                        //dockerlog.setValue(data.return);
                     }
-                    $(".nav-tabs a[href=\"#logtab\"]").tab("show");
-                    $(".tab-pane.in.active").removeClass("in active")
-                    $("#logtab").addClass("in active")
-
-                    // Remove CodeMirror output, re-create (had some
-                    // problems when just changing content on inactive tabs)
-                    $("#dockerlog").remove();
-                    $("#logtab").find(".CodeMirror").remove()
-                    $("#logtab").append("<textarea id=\"dockerlog\">" + data.return + "</textarea>");
-                    CodeMirror.fromTextArea(document.getElementById("dockerlog"), CMOpts);
-
-                    //dockerlog.setValue(data.return);
 
                 },
                 error: function(xhr, status, error) {
-                    console.log(xhr.statusText)
+                    //console.log(xhr.statusText)
                     alert("Error: " + error)
                 }
             });
