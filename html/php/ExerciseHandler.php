@@ -8,7 +8,7 @@
 # -------------------------------------------------------------------
 # - EDITORIAL:   2019-04-19, RS: Created file on thinkreto.
 # -------------------------------------------------------------------
-# - L@ST MODIFIED: 2019-08-20 17:49 on marvin
+# - L@ST MODIFIED: 2019-08-21 15:34 on marvin
 # -------------------------------------------------------------------
 
 
@@ -88,11 +88,78 @@ class ExerciseHandler {
     }
 
 
+    private function _load_exercise_xml($file) {
+        if (!is_file($file)) {
+            die(sprintf("Cannot find requested file \"%s\".", $file));
+        }
+        libxml_use_internal_errors(true);
+        $xml = simplexml_load_file($file);
+        if ($xml === false) {
+            echo "Failed loading XML: ";
+            foreach(libxml_get_errors() as $error) {
+                echo "<br>", $error->message;
+            }
+            die(0);
+        }
+        return($xml);
+    }
+
+    /* Check if "included files" exist on disc (files shipped with
+     * the exercise itself).
+     *
+     * Parameters
+     * ==========
+     * xml : SimpleXMLObject
+     *      the exercise xml file.
+     * path : str
+     *      path where the files are located.
+     */
+    private function _check_xml_file_availability($xml, $dir) {
+        if (!is_object($xml)) die("Wrong input to _check_xml_file_availability");
+        if (!is_dir($dir)) die(sprintf("Cannot find directory \"%s\"", $dir));
+        if (property_exists($xml->settings->files, "file")) {
+            foreach($xml->settings->files->file as $file) {
+                if (!is_file(join("/", array($dir, $file)))) {
+                    printf("Cannot find file which should be shipped with the exercise. "
+                          ."Name of the file: \"%s/%s\".", $dir, $file);
+                    die();
+                }
+            }
+        }
+        return;
+    }
 
 
+    /* Show a specific exercise (description, ...)
+     *
+     * Parameters
+     * ==========
+     * hash : str
+     *      hash for this specific exercise/current user. The hash is
+     *      a combination of a random hash, the timestamp when the exercise
+     *      has been assigned, and the user id. Used for the user uploads.
+     * exercise_id : int
+     *      ID of the exercise.
+     *
+     * Returns
+     * =======
+     * No return, just creates UI.
+     */
     public function show_exercise($hash, $exercise_id) {
 
-        // Exercise directory
+        // The files we will use
+        $exdir = sprintf("%s/%d", $this->config->get("path", "exercises"), $exercise_id);
+        $files = array("xml"         => sprintf("%s/%s", $exdir, "exercise.xml"),
+                       "description" => sprintf("%s/%s", $exdir, "exercise_description.html"),
+                       "solution"    => sprintf("%s/%s", $exdir, "exercise_solution.html"),
+                       "tests"       => sprintf("%s/%s", $exdir, "exercise_tests.html"));
+
+        # Check if files exist. If not, stop
+        foreach($files as $key=>$val) {
+            if (!is_file($val)) { die(sprintf("Cannot find file \"%s\".", $value)); }
+        }
+
+        // User directory. If not existing, create.
         $userdir  = sprintf("%s/user-%d/%s", $this->config->get("path", "uploads"),
                             $_SESSION["user_id"], $hash);
         if(!is_dir($userdir)) {
@@ -100,13 +167,53 @@ class ExerciseHandler {
             if(!$check) { die("Problems creating the directory! Whoops."); }
         }
 
-        $file = sprintf("%s/%d/exercise.html", $this->config->get("path", "exercises"), $exercise_id);
-        if (!file_exists($file)) {
-            die(sprintf("ERROR: Cannot find exercise \"%s\"", $file));
-        }
-        # Else loading the file and return content
-        $exercise = file_get_contents($file);
+        // Read exercise information
+        $xml         = $this->_load_exercise_xml($files["xml"]);
+        $description = file_get_contents($files["description"]);
+        $solution    = file_get_contents($files["solution"]);
+        $tests       = file_get_contents($files["tests"]);
 
+        // If we have "Files included" (<file>...</file>) in the xml file,
+        // check if these files are available.
+        // TODO: error styling in the whole function.
+        $this->_check_xml_file_availability($xml, $exdir);
+
+        // Small helper function for meta-info output
+        function show_ul($title, $class, $entries) {
+            $str  = sprintf("<div style=\"clear: both;\">\n<b>%s</b>\n", $title);
+            $str .= sprintf("<ul class=\"exerciser %s\">", $class);
+            foreach($entries as $x) { $str .= sprintf("  <li>%s</li>\n", $x); }
+            $str .= "</ul>\n</div>";
+            print($str);
+        }
+        ?>
+
+        <div class="row">
+          <div class="col-md-9" id="description">
+              <?php print($description); ?>
+          </div>
+          <div class="col-md-3" id="metainfo">
+            <h1>Metainfo</h1>
+            <?php
+            if (property_exists($xml->settings->blacklist, "cmd")) {
+                show_ul("Blacklisted", "cmd blacklist", $xml->settings->blacklist->cmd);
+            }
+            if (property_exists($xml->settings->whitelist, "cmd")) {
+                show_ul("Whitelisted", "cmd whitelist", $xml->settings->whitelist->cmd);
+            }
+            if (property_exists($xml->settings->files, "file")) {
+                show_ul("Files included", "files", $xml->settings->files->file);
+            }
+            ?> 
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12" id="tests">
+            <?php print($tests); ?> 
+          </div>
+        </div>
+
+        <?php
         # Expecting the script here:
         $file    = sprintf("%s/main.R", $userdir);
 

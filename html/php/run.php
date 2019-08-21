@@ -12,11 +12,6 @@ $DbHandler = new DbHandler("test.db", "../");
 #    die(0);
 #}
 
-#// Get session information
-#$exercise_hash = $_SESSION["exercise_hash"];
-#$exercise_id   = $_SESSION["exercise_id"];
-#$user_id       = $_SESSION["user_id"];
-
 
 $exercise_hash = "69999d02a5-1555679436-1";
 $exercise_id   = 2;

@@ -39,3 +39,36 @@
 .opencpulogo { background-image: url("opencpu-logo.png"); }
 .dockerlogo  { background-image: url("docker-logo.png"); }
 .Rlogo       { background-image: url("R-logo.png"); }
+
+/* Metainfo styling */
+ul.exerciser.cmd, ul.exerciser.files {
+    padding: 0;
+    margin: 0;
+}
+ul.exerciser.cmd > li, ul.exerciser.files > li {
+    list-style: none;
+    float: left;
+    margin: 0;
+    padding: 0 .3em;
+    margin-right: .3em;
+    font-family: monospace, courier;
+    font-size: .8em;
+    border: 1px solid black;
+}
+ul.exerciser.cmd.blacklist > li { border-color: red; background-color: #ffe6e6; }
+ul.exerciser.cmd.whitelist > li { border-color: #009900; background-color: #e6ffe6; }
+ul.exerciser.files         > li { border-color: #0099e6; background-color: #cceeff; }
+
+/* R Tests */
+div#tests code {
+    color: #007bff;
+    display: block;
+    float: none;
+}
+div#tests .test-invisible {
+    color: gray;
+}
+
+
+
+
