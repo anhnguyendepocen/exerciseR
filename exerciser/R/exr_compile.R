@@ -50,7 +50,8 @@ exr_compile <- function(file, overwrite = FALSE, verbose = FALSE) {
     outfile <- list(xml         = file.path(dirname(file), sprintf("%s.xml", tmp)),
                     description = file.path(dirname(file), sprintf("%s_description.html", tmp)),
                     solution    = file.path(dirname(file), sprintf("%s_solution.html", tmp)),
-                    tests       = file.path(dirname(file), sprintf("%s_tests.html", tmp)))
+                    tests       = file.path(dirname(file), sprintf("%s_tests.html", tmp)),
+                    Rtests      = file.path(dirname(file), sprintf("%s_tests.R", tmp)))
     if (file.exists(outfile$xml) & !overwrite) {
         stop(paste(sprintf("File \"%s\" exist!", outfile$xml),
                    "Overwrite is set to FALSE to prevent rendering the exercise again!"))
@@ -140,6 +141,14 @@ exr_compile <- function(file, overwrite = FALSE, verbose = FALSE) {
         }
     }
     writeLines(as.character(tdiv), outfile$tests)
+
+    # Write a "exercise_tests.R" file used to check the user submission.
+    Rtests <- c("## Loading tinytest", "library(\"tinytest\")", "")
+    for (n in names(tests)) {
+        Rtests <- append(Rtests, sprintf("## Test %s", n))
+        Rtests <- append(Rtests, sprintf("%s", tests[[n]]))
+    }
+    writeLines(Rtests, outfile$Rtests)
 
 
     # Next: store description and solution (HTML, used by the UI)

@@ -11,7 +11,7 @@ class OcpuHandler {
 
     private $exercise_dir = NULL;
 
-    function __construct($dir, $exercise_id, $exercise_hash) {
+    function __construct($dir, $exercise_id, $user_id, $exercise_hash) {
         
         if (!is_dir($dir)) {
             $this->result = array("error" => sprintf("Exercise directory \"%s\" not found", $dir));
@@ -19,7 +19,7 @@ class OcpuHandler {
         }
 
         # Fetching hash
-        $ret = $this->_curl_exec_test($dir, (int)$exercise_id, $exercise_hash);
+        $ret = $this->_curl_exec_test($dir, (int)$exercise_id, (int)$user_id, $exercise_hash);
         if (!$ret) {
             error_log("[error] Did not get opencpu execution hash!", 0);
             $this->result = array("error" => "Problems connecting opencpu/get opencpu hash.");
@@ -62,7 +62,7 @@ class OcpuHandler {
         print(json_encode($this->get_result()));
     }
 
-    private function _curl_exec_test($dir, $exercise_id, $exercise_hash) {
+    private function _curl_exec_test($dir, $exercise_id, $user_id, $exercise_hash) {
 
         # OpenCPU url
         $url        = sprintf("%s/%s", $this->server_url, $this->server_fun);
@@ -70,6 +70,7 @@ class OcpuHandler {
         # Curl data sent (POST)
         $curl_data  = sprintf("dir=\"%s\"",            $dir);       # where we have the file
         $curl_data .= sprintf("&exercise_id=%d",       $exercise_id);   # Exercise ID
+        $curl_data .= sprintf("&user_id=%d",           $user_id);       # Obviously the user ID
         $curl_data .= sprintf("&exercise_hash=\"%s\"", $exercise_hash); # User exercise hash
 
         $curl_args = array(CURLOPT_URL            => $url,
@@ -78,15 +79,15 @@ class OcpuHandler {
                            CURLOPT_POST           => true,
                            CURLOPT_POSTFIELDS     => $curl_data);
 
-        print("============= curl call ==============\n");
-        print_r($curl_args);
+        ####print("============= curl call ==============\n");
+        ###print_r($curl_args);
         // Use CURL to run the script.
         $curl = curl_init();
         curl_setopt_array($curl, $curl_args);
         $response = curl_exec($curl);
         curl_close($curl);
-        var_dump($response);
-        print("=========== end curl call ============\n");
+        ####var_dump($response);
+        ####print("=========== end curl call ============\n");
         return($response);
     }
 

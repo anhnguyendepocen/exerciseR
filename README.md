@@ -117,4 +117,8 @@ run the exerciseR. My rule set currently looks as follows:
 # Path with user package library
 @{HOME}/R/** rwmklix,
 @{HOME}/R/   rmix, 
+
+# Path where we have the exercises/user files, readonly!
+/home/retos/Software/exerciseR/files/** r,
+/home/retos/Software/exerciseR/files/ r,
 ```

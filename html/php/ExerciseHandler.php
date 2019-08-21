@@ -8,7 +8,7 @@
 # -------------------------------------------------------------------
 # - EDITORIAL:   2019-04-19, RS: Created file on thinkreto.
 # -------------------------------------------------------------------
-# - L@ST MODIFIED: 2019-08-21 15:34 on marvin
+# - L@ST MODIFIED: 2019-08-21 18:53 on marvin
 # -------------------------------------------------------------------
 
 
@@ -289,6 +289,9 @@ class ExerciseHandler {
                     <textarea id="dockerlog">
                     <?php print($dockerlog); ?>
                     </textarea>
+                </div>
+                <div class="tab-pane container fade" id="ocputab">
+                     ... action pending ...
                 </div>
             </div>
         </div>

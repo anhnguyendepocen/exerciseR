@@ -13,9 +13,9 @@ $DbHandler = new DbHandler("test.db", "../");
 #}
 
 
-$exercise_hash = "69999d02a5-1555679436-1";
-$exercise_id   = 2;
-$user_id       = 1;
+$exercise_id   = 1;
+$user_id       = 2;
+$exercise_hash = "7029e93faa-1555679436-2";
 
 // Update database
 $res = $DbHandler->query(sprintf("SELECT run_counter FROM exercise_mapping "
@@ -42,7 +42,7 @@ fclose($fid);
 $log = fopen("test.log", "w");
 fwrite($log, "Calling opencpu\n");
 
-$ocpu = new OcpuHandler($dir, $exercise_id, $exercise_hash);
+$ocpu = new OcpuHandler($dir, $exercise_id, $user_id, $exercise_hash);
 
 fwrite($log, "Object initialized\n");
 fwrite($log, json_encode($ocpu->get_result()));
@@ -55,23 +55,21 @@ $DbHandler->exec(sprintf("UPDATE exercise_mapping SET "
                         ."status = %d WHERE hash = '%s';",
                         (int)$status, $exercise_hash));
 
-// Write return into log file
-$fid = fopen(sprintf("%s/main.log", $dir), "w");
-fwrite($fid, var_dump($ocpu->get_result()));
-fclose($fid);
+####// Write return into log file
+####$fid = fopen(sprintf("%s/main.log", $dir), "w");
+####fwrite($fid, var_dump($ocpu->get_result()));
+####fclose($fid);
 
 $DbHandler->close();
 
-die("development stop");
-
 // Add information to the results array
-print("----------------------------------\n");
+####print("----------------------------------\n");
 $res["returncode"] = in_array("error", array_keys($ocpu->get_result())) ? 9 : 0;
 foreach($ocpu->get_result() as $key=>$val) { $res[$key] = $val; }
 
-print("----------------------------------\n");
-print($res["console"]);
-print("----------------------------------\n");
+###print("----------------------------------\n");
+###print($res["console"]);
+###print("----------------------------------\n");
 
 print(json_encode($res)); die();
 

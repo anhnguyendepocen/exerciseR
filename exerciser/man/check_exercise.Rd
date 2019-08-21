@@ -4,15 +4,17 @@
 \alias{check_exercise}
 \title{Check/Test solution for a specific exercise}
 \usage{
-check_exercise(dir, exercise_id, exercise_hash)
+check_exercise(dir, exercise_id, user_id, exercise_hash)
 }
 \arguments{
-\item{dir}{character, folder containing exercises and user uploads.}
+\item{dir}{character, folder containing exercises and user uploads}
 
-\item{exercise_id}{integer, ID of the exercise (as in database).}
+\item{exercise_id}{integer, ID of the exercise (as in database)}
+
+\item{user_id}{integer, ID of the user}
 
 \item{exercise_hash}{string, combination of random hash, assignment-timestamp, and user ID
-(see database). Used to identify a specific exercise for a specific user.}
+(see database). Used to identify a specific exercise for a specific user}
 }
 \value{
 No explicit return, creates output on stdout.
