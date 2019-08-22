@@ -7,6 +7,10 @@ $config = new ConfigParser("../files/config.ini");
 require_once("php/ExerciseR.php");
 $Handler = new ExerciseR($config);
 $Handler->site_show_header();
+
+# Used to load files from the "files" folder ont accessible
+# by the webserver.
+require_once("php/FileHandler.php");
 ?>
 
   <!-- CodeMirror -->
@@ -24,8 +28,8 @@ $Handler->site_show_header();
         var textarea = document.getElementById("script")
         var script   = CodeMirror.fromTextArea(textarea, CMOpts);
         // Code styling/highlighting log tab
-        var textarea  = document.getElementById("dockerlog");
-        var dockerlog = CodeMirror.fromTextArea(textarea, CMOpts);
+        var textarea  = document.getElementById("ocpulog");
+        var ocpulog = CodeMirror.fromTextArea(textarea, CMOpts);
 
         // File upload functionality
         $("input[type='file']").change(function(){
@@ -46,8 +50,8 @@ $Handler->site_show_header();
                 // Remove CodeMirror output, re-create (had some
                 // problems when just changing content on inactive tabs)
                 $("#script").remove();
-                $("#scripttab").find(".CodeMirror").remove()
-                $("#scripttab").append("<textarea id=\"script\">" + data.content + "</textarea>");
+                $("#tab-script").find(".CodeMirror").remove()
+                $("#tab-script").append("<textarea id=\"script\">" + data.content + "</textarea>");
                 CodeMirror.fromTextArea(document.getElementById("script"), CMOpts);
 
                 // Activate the "run button" if needed
@@ -55,6 +59,7 @@ $Handler->site_show_header();
                     .removeClass("btn-secondary").addClass("btn-success");
             },
             error: function(error){
+                alert('x');
                 $('#progress').html("Failure!<br>" + error.name + ": " + error.message);
             }
             });
@@ -66,15 +71,33 @@ $Handler->site_show_header();
             // Find tab id and textarea id
             var href = $(this).attr("href")
             var id = $(href).find("textarea").attr("id")
-            $(href).find(".CodeMirror").remove()
-            console.log("REMOVE")
-            // Regenerate CodeMirror
-            CodeMirror.fromTextArea(document.getElementById(id), CMOpts);
+            if (id !== undefined) {
+                // Regenerate CodeMirror
+                $(href).find(".CodeMirror").remove()
+                CodeMirror.fromTextArea(document.getElementById(id), CMOpts);
+            }
         });
+    
+        $.fn.update_tab_ocpuoutput = function() {
+            <?php
+            $file = sprintf("%s/user-%d/%s/_ocpu_output.html",
+                            $config->get("path", "uploads"),
+                            $_SESSION["user_id"], $_SESSION["exercise_hash"]);
+            ?>
+            console.log("Loading file <?php print($file); ?>");
+            $("#ocpuoutput").load("getFile.php", {file: "<?php print($file); ?>"});
+            $.each($("#ocpuoutput").find("pre"), function() {
+                console.log("xxx")
+                if ($(this).find("code:contains(\"PASSED\")").length > 0) {
+                    console.log(" -=------ PASSED")
+                    $(this).css("background-color", "red")
+                }
+            });
+        }
 
         // Run script
         $("#btn-run").on("click", function() {
-            var elem = $("#logtab div.alert");
+            var elem = $("#tab-ocpuoutput div.alert, #tab-ocpulog div.alert");
             elem.removeClass().addClass("alert alert-info")
                 .html("<div class='spinner-border'></div> Running ...")
             $.ajax({
@@ -92,27 +115,37 @@ $Handler->site_show_header();
                     if (data.error !== undefined) {
                         alert(data.error);
                     } else {
+                        // If we got an error from R/ocpu: go to log page
                         if (data.returncode == 0) {
-                            $("#logtab .alert").removeClass().addClass("alert")
-                                .addClass("alert-success").html("Perfect, exercise successfully solved!");
+                            //$("#tab-ocpulog .alert").removeClass().addClass("alert")
+                            $(elem).removeClass().addClass("alert")
+                                .addClass("alert-success")
+                                .html("Test succesfully run, check output!");
+                            var tabid = "#tab-ocpuoutput"
+                        // Else switch to output (user output)
                         } else {
-                            $("#logtab .alert").removeClass().addClass("alert")
+                            //$("#tab-ocpulog .alert").removeClass().addClass("alert")
+                            $(elem).removeClass().addClass("alert")
                                 .addClass("alert-danger")
                                 .html("Something went wrong! Check logs for details.")
+                            var tabid = "#tab-ocplog"
                         }
-                        $(".nav-tabs a[href=\"#logtab\"]").tab("show");
+
+                        // Switch tab
+                        $(".nav-tabs a[href=\"" + tabid + "\"]").tab("show");
                         $(".tab-pane.in.active").removeClass("in active")
-                        $("#logtab").addClass("in active")
+                        $(tabid).addClass("in active")
     
                         // Remove CodeMirror output, re-create (had some
                         // problems when just changing content on inactive tabs)
-                        $("#dockerlog").remove();
-                        $("#logtab").find(".CodeMirror").remove()
-                        $("#logtab").append("<textarea id=\"dockerlog\">"
+                        $("#ocpulog").remove();
+                        $("#tab-ocpulog").find(".CodeMirror").remove()
+                        $("#tab-ocpulog").append("<textarea id=\"ocpulog\">"
                             + data.console + "</textarea>");
-                        CodeMirror.fromTextArea(document.getElementById("dockerlog"), CMOpts);
+                        CodeMirror.fromTextArea(document.getElementById("ocpulog"), CMOpts);
     
-                        //dockerlog.setValue(data.return);
+                        //ocpulog.setValue(data.return);
+                        $.fn.update_tab_ocpuoutput();
                     }
 
                 },

@@ -6,6 +6,6 @@ Date: 2019-07-04
 Author: Reto Stauffer
 Maintainer: Reto Stauffer <Reto.Stauffer@uibk.ac.at> 
 Description: Serves the scripts for opencpu script execution calls via API.
-Depends: R (>= 3.5.4), rmarkdown, xml2, tinytest
+Depends: R (>= 3.5.4), rmarkdown, xml2, tinytest, crayon
 License: GPL-2
 RoxygenNote: 6.1.1

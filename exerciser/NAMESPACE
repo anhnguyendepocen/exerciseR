@@ -2,7 +2,6 @@
 
 export(check_exercise)
 export(exr_compile)
-export(foo)
 import(xml2)
 importFrom(crayon,blue)
 importFrom(crayon,green)

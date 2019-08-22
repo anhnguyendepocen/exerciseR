@@ -27,14 +27,15 @@ class OcpuHandler {
         }
 
         # If this worked: extract hash
-        $hash = $this->_extract_hash($ret);
-        if (!$hash) {
+        $ocpu = $this->_extract_hash($ret);
+        if (!$ocpu) {
             $this->result = array("error" => "Problems extracting the temporary hash.");
+            $this->returncode = 999;
             return;
         }
 
         # Loading console output
-        $this->result = $this->_curl_get_console($hash->path);
+        $this->result = $this->_curl_get_return($ocpu->path, $ocpu->hash, "console/text");
 
     }
 
@@ -86,49 +87,38 @@ class OcpuHandler {
         curl_setopt_array($curl, $curl_args);
         $response = curl_exec($curl);
         curl_close($curl);
-        ####var_dump($response);
+        ####print_r($response);
         ####print("=========== end curl call ============\n");
         return($response);
     }
 
-    //private function _curl_exec_script($file) {
-    //    $url       = sprintf("%s/%s/%s", $this->server_url, $this->server_path, $file);
-    //    $curl_args = array(CURLOPT_URL => $url,
-    //                       CURLOPT_CUSTOMREQUEST => "POST",
-    //                       CURLOPT_RETURNTRANSFER => true);
-
-    //    // Use CURL to run the script.
-    //    $curl = curl_init();
-    //    curl_setopt_array($curl, $curl_args);
-    //    $response = curl_exec($curl);
-    //    curl_close($curl);
-    //    return($response);
-    //}
-
     private function _extract_hash($ret) {
         // Extract temporary hash
-        preg_match("/ocpu\/tmp\/([\w]+)\/console/", $ret, $matches); 
-        if (count($matches) != 2) {
+        preg_match("/(ocpu\/tmp)\/([\w]+)\/console/", $ret, $matches); 
+        if (count($matches) != 3) {
             return(false);
         } else {
             $tmp = new stdClass();
-            $tmp->path = $matches[0];
-            $tmp->hash = $matches[1];
+            $tmp->path = $matches[1];
+            $tmp->hash = $matches[2];
             return($tmp);
         }
     }
 
 
-    private function _curl_get_console($file) {
+    private function _curl_get_return($path, $hash, $what) {
     // -----------------------------------------------
     // Fetch console output
-        $url = sprintf("%s/%s/text", $this->server_url, $file);
+        $url = sprintf("%s/%s/%s/%s", $this->server_url, $path, $hash, $what);
+        ##print("\n\n .........................................\n");
+        ##print_r("\n\n".$url."\n\n");
         $curl_args = array(CURLOPT_URL => $url,
                            CURLOPT_CUSTOMREQUEST => "POST",
                            CURLOPT_RETURNTRANSFER => true);
         $curl = curl_init();
         curl_setopt_array($curl, $curl_args);
         $response = curl_exec($curl);
+        ##print_r($response);
         curl_close($curl);
         return(array("console" => $response));
     }

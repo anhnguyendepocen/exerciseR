@@ -11,7 +11,9 @@ $DbHandler = new DbHandler("test.db", "../");
 #    print(json_encode(array("error" => "exercise_hash not found")));
 #    die(0);
 #}
-
+#$exercise_id   = $_SESSION["exercise_id"];
+#$user_id       = $_SESSION["user_id"];
+#$exercise_hash = $_SESSION["exercise_hash"];
 
 $exercise_id   = 1;
 $user_id       = 2;
@@ -54,11 +56,6 @@ $status = $ocpu->has_result() ? 1 : 9;
 $DbHandler->exec(sprintf("UPDATE exercise_mapping SET "
                         ."status = %d WHERE hash = '%s';",
                         (int)$status, $exercise_hash));
-
-####// Write return into log file
-####$fid = fopen(sprintf("%s/main.log", $dir), "w");
-####fwrite($fid, var_dump($ocpu->get_result()));
-####fclose($fid);
 
 $DbHandler->close();
 

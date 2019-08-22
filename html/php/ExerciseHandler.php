@@ -8,7 +8,7 @@
 # -------------------------------------------------------------------
 # - EDITORIAL:   2019-04-19, RS: Created file on thinkreto.
 # -------------------------------------------------------------------
-# - L@ST MODIFIED: 2019-08-21 18:53 on marvin
+# - L@ST MODIFIED: 2019-08-22 20:12 on marvin
 # -------------------------------------------------------------------
 
 
@@ -234,19 +234,13 @@ class ExerciseHandler {
         # Docker log
         $logfile = sprintf("%s/main.log", $userdir);
         if (file_exists($logfile)) {
-            $dockerlog = file_get_contents($logfile);
+            $ocpulog = file_get_contents($logfile);
         } else {
-            $dockerlog = "# No logs yet ...";
+            $ocpulog = "# No logs yet ...";
         }
 
         ?>
 
-        <div class="row">
-          <div class="col-sm-12">
-              <?php print($exercise); ?>
-          </div>
-        </div>
-        
         <div class="row" style="margin-top: 2em;">
             <div class="col-sm-6">
                 <h4>Upload R Script</h4>
@@ -267,31 +261,38 @@ class ExerciseHandler {
             <!-- tab navigation -->
             <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a class="nav-link active" data-toggle="tab" href="#scripttab">Script</a>
+                    <a class="nav-link active" data-toggle="tab" href="#tab-script">Script</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#logtab">Log</a>
+                    <a class="nav-link" data-toggle="tab" href="#tab-ocpuoutput">Output</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#tab-ocpulog">Log</a>
                 </li>
             </ul>
             <br />
 
             <!-- tab contents -->
             <div class="tab-content" style="width: 100%; float: none;">
-                <div class="tab-pane container active" id="scripttab">
+                <div class="tab-pane container active" id="tab-script">
                     This is the content of your R script:
                     <textarea id="script">
                     <?php print($script); ?>
                     </textarea>
                 </div>
-                <div class="tab-pane container fade" id="logtab">
+                <div class="tab-pane container fade" id="tab-ocpuoutput">
                     <div class="alert alert-info">No message yet ...</div>
                     <br />
-                    <textarea id="dockerlog">
-                    <?php print($dockerlog); ?>
-                    </textarea>
+                    <div id="ocpuoutput">
+                    No output produced so far.
+                    </div>
                 </div>
-                <div class="tab-pane container fade" id="ocputab">
-                     ... action pending ...
+                <div class="tab-pane container fade" id="tab-ocpulog">
+                    <div class="alert alert-info">No message yet ...</div>
+                    <br />
+                    <textarea id="ocpulog">
+                    <?php print($ocpulog); ?>
+                    </textarea>
                 </div>
             </div>
         </div>

@@ -13,6 +13,7 @@
 #' @return No explicit return, creates output on stdout.
 #'
 #' @import xml2
+#' @importFrom crayon blue
 #' @export
 check_exercise <- function(dir, exercise_id, user_id, exercise_hash) {
 
@@ -32,6 +33,10 @@ check_exercise <- function(dir, exercise_id, user_id, exercise_hash) {
     path <- list(exercise = sprintf("%s/exercises/%d", dir, exercise_id),
                  user     = sprintf("%s/uploads/user-%d/%s", dir, user_id, exercise_hash))
     stopifnot(all(sapply(path, dir.exists)))
+
+    # Delete output file if existing
+    if (file.exists(sprintf("%s/_ocpu_output.html", path$user)))
+        file.remove(sprintf("%s/_ocpu_output.html", path$user))
 
     cat("[exR] Exercise ID:        ", exercise_id, "\n");
     cat("[exR] Exercise hash:      ", exercise_hash, "\n");
@@ -58,6 +63,11 @@ check_exercise <- function(dir, exercise_id, user_id, exercise_hash) {
     }
     check_and_copy_files(doc, path$exercise, getwd())
 
+    # Development purposes, added to log file
+    cat("----------------- begin main.R -----------------\n")
+    cat(writeLines(readLines(sprintf("%s/main.R", path$user)), sep = "\n"))
+    cat("------------------ end main.R ------------------\n")
+
     # What we do now: combine the user script with our test script
     # and source this file.
     tmp <- c(sprintf("%s/main.R", path$user),
@@ -67,42 +77,62 @@ check_exercise <- function(dir, exercise_id, user_id, exercise_hash) {
 
 
     # Knitr::spin to convert R->md
+    sink("/dev/null")
     Rmd_file <- knitr::spin(tempfile, format = "Rmd", report = FALSE)
+    sink(NULL)
     # Render with rmarkdown -> html
     opts <- list(self_contained = TRUE, mathjax = TRUE)
     html_file <- rmarkdown::render(Rmd_file,
                                    output_options = opts)
     # Copy html into users home directory.
-    print(html_file)
-    file.copy(html_file, sprintf("%s/_ocpu_output.html", path$user))
-    #cat(readLines(html_file), sep = "\n")
+    doc <- read_html(html_file)
+    # Find body entry
+    content <- xml_find_first(doc, "//*/div[contains(@class, 'main-container')]")
+    xml_attr(content, "id") <- "ocpuoutput-response"
 
-    ###cat("\n\nCWD of opencpu call: ", getwd(), "\n\n")
-    ###x <- list.files(dir, "*")
-    ###writeLines(x)
+    # Adding classes for PASSED/FAILED
+    tests_failed <- 0
+    tests_count  <- 0
+    for (pre in xml_find_all(content, "pre")) {
+        code <- xml_find_first(pre, "code")
+        if (grepl("----\\sFAILED", xml_text(code))) {
+            tests_failed <- tests_failed + 1
+            if (is.na(xml_attr(pre, "class"))) {
+                xml_attr(pre, "class") <- "failed"
+            } else {
+                xml_attr(pre, "class") <- paste(xml_attr(pre, "class"), "failed")
+            }
+        } else if (grepl("----\\sPASSED", xml_text(code))) {
+            if (is.na(xml_attr(pre, "class"))) {
+                xml_attr(pre, "class") <- "passed"
+            } else {
+                xml_attr(pre, "class") <- paste(xml_attr(pre, "class"), "passed")
+            }
+        }
+        # Test count
+        if (grepl("----\\s(PASSED|FAILED)", xml_text(code))) {
+            tests_count <- tests_count + 1
+        }
+    }
 
-    ###xdir <- "/home/retos"
-    ###cat("\n\nTrying to read something", xdir, "\n")
-    ###x <- list.files(xdir, "*")
-    ###writeLines(x)
+    # Adding a special HTML element which contains the number of
+    # tests failed. Used by the UI/UX to decide whether or not the user
+    # successfully solved the exercise (or not).
+    xml_add_child(content,
+                  read_xml(paste("<pre id=\"ocpu-tests-failed\">",
+                                 "# ExerciseR Test Summary:\nTests faild:",
+                                 sprintf("<span class=\"absolute\">%s</span>", tests_failed),
+                                 sprintf("<span class=\"success\">(Success rate: %.1f percent)</span>",
+                                         (tests_count - tests_failed) / tests_count * 100),
+                                 "</pre>")),
+                  .where = 0L)
 
-    ###cat("\n\nTrying to read a file from Downloads\n")
-    ###x <- readLines("/home/retos/Downloads/read.R")
-    ###writeLines(x)
-    ###cat("\n\n\n")
+    ocpu_output <- sprintf("%s/_ocpu_output.html", path$user)
+    cat(green(sprintf("[exR] Write output into \"%s\"\n", ocpu_output)))
+    writeLines(as.character(content), ocpu_output, sep = "\n")
 
-    ###print(Sys.info())
-
-    ###return("success in R?")
-
-    ###stopifnot(file.exists(solution))
-    ###stopifnot(file.exists(test))
-
-    #### Else sourcing the solution
-    ###source(solution)
-
-    #### Calling the test script
-    ###source(test)
+    # No return!
+    invisible(NA)
 }
 
 

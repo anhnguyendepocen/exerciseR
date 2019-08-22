@@ -69,6 +69,14 @@ div#tests .test-invisible {
     color: gray;
 }
 
-
+/* Code styling */
+#ocpuoutput-response pre {
+    border-radius: .2em;
+    border: 1px solid #E1E1E1;
+    padding: .5em;
+    background-color: #F9F9F9;
+}
+#ocpuoutput-response pre.failed { background-color: #F7ECEE; color: #441507; }
+#ocpuoutput-response pre.passed { background-color: #F1F7EC; }
 
 
