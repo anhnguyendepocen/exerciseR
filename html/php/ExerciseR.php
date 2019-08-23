@@ -4,26 +4,60 @@
  */
 class ExerciseR {
 
-    public $DbHandler    = NULL;
     public $LoginHandler = NULL;
-    private $post = NULL;
-    private $config = NULL;
+    public $DbHandler    = NULL;
+    public $UserClass    = NULL;
 
-    function __construct($config) {
+    private $post        = NULL;
+    private $config      = NULL;
+    private $ExerciseHandler = NULL;
 
-        require("DbHandler.php");
-        require("ExerciseHandler.php");
-        require("LoginHandler.php");
+    // Use 'true' for admin pages, 'false' for participant pages.
+    // Used to check if the current user has enough privileges
+    // to see this page.
+    private $admin_page = false;
 
+    /* Setting up ExerciseR object.
+     *
+     * The ExerciseR object is the main object for the UI/UX.
+     * Sets up the database connection, grants permission (LoginHandler)
+     * to the UI, and loads user information (UserClass).
+     * In addition, an ExerciseHandler object is initialized (handling
+     * Exercises, Overview, ...).
+     *
+     * Parameters
+     * ==========
+     * config : ConfigParser
+     *      object with UI/UX configuration.
+     */
+    function __construct($config, $admin_page = false) {
+
+        // Default time zone handling
         date_default_timezone_set("UTC");
+        $this->admin_page = $admin_page;
+
+        // Append ConfigParser object
         $this->config       = $config;
 
-        $this->DbHandler    = new DbHandler($config->get("sqlite3", "dbfile"));
+        require("DbHandler.php");
+        $this->DbHandler = new DbHandler($config->get("sqlite3", "dbfile"));
 
         // Create LoginHandler, does login check on construct
+        require("LoginHandler.php");
         $this->LoginHandler = new LoginHandler($this->DbHandler);
 
+        // If logn was successful: add UserClass to the object
+        require("UserClass.php");
+        $this->UserClass = new UserClass($_SESSION["user_id"], $this->DbHandler);
+
+        // If this is an admin page but the user has no admin privileges.
+        // show an error.
+        if ($this->admin_page & !$this->UserClass->is_admin()) {
+            $this->LoginHandler->access_denied();
+        }
+
         // Exercise handler
+        require("ExerciseHandler.php");
         $this->ExerciseHandler = new ExerciseHandler($config, $this->DbHandler);
 
         // Store _POST object
@@ -31,6 +65,14 @@ class ExerciseR {
 
     }
 
+    /* Show page header
+     *
+     * Creates the html document head including navigation.
+     *
+     * Returns
+     * =======
+     * No return, creates html output (header).
+     */
     public function site_show_header() {
         ?>
 <!DOCTYPE html>
@@ -59,8 +101,13 @@ class ExerciseR {
             <li class="nav-item">
                 <a class="nav-link text-light" href="about.php">about</a>
             </li>
+            <?php if ($this->UserClass->is_admin()) { ?>
             <li class="nav-item">
-                <?php $this->LoginHandler->logout_form(); ?>
+                <a class="nav-link text-light" href="admin/">admin</a>
+            </li>
+            <?php } ?>
+            <li class="nav-item">
+                <?php $this->LoginHandler->logout_form($this->UserClass); ?>
             </li>
         </ul>
     </nav>

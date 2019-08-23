@@ -1,6 +1,5 @@
 <?php
 
-
 class LoginHandler {
 
     private $db = NULL;
@@ -33,13 +32,56 @@ class LoginHandler {
             if (is_bool($user_id)) {
                 print("Invalid user name or passsword. Try again.\n");
             } else {
-                $_SESSION["user_id"] = $user_id;
+                $_SESSION["user_id"]  = $user_id;
                 $_SESSION["username"] = $post->username;
             }
         }
 
         if(!isset($_SESSION["user_id"])) { $this->show_login_form(); }
 
+    }
+
+    /* Displays a "login denied" page.
+     */
+    public function access_denied($reason = NULL) {
+        ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>exerciseR</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/exerciseR.css">
+    <script src="lib/jquery-3.4.1.min.js"></script>
+    <script src="lib/bootstrap-4.2.1.min.js"></script>
+</head>
+<body>
+    <nav id="top-nav" class="navbar navbar-expand-sm bg-primary navbar-light">
+        <img id="exerciserlogo" src="css/logo.svg"></img>
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <?php $this->logout_form($this->UserClass); ?>
+            </li>
+        </ul>
+    </nav>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h1>ExerciseR login</h1>
+                <p>Access denied!</p>
+                <p>
+                    <b>Reason:</b>
+                    <?php print(is_null($reason) ? "It is, as it is." : $reason); ?>
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+        <?php
+        die(0);
     }
 
     /* Display login form
@@ -110,7 +152,7 @@ class LoginHandler {
 
     /* Display logout form.
      */
-    public function logout_form() {
+    public function logout_form($UserClass) {
         ?>
         <form method="POST">
         <input type="hidden" value="logout" name="logout" />
@@ -123,6 +165,5 @@ class LoginHandler {
     private function logout() {
         session_destroy();
     }
-
 
 }

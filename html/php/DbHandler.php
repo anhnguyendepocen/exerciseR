@@ -7,6 +7,7 @@ class DbHandler extends SQLite3 {
          $check = $this->open($db);
          // Check required tables, create if not yet existing
          $this->_check_table("users");
+         $this->_check_table("users_role");
          $this->_check_table("exercises");
          $this->_check_table("exercise_mapping");
     }
@@ -50,6 +51,30 @@ class DbHandler extends SQLite3 {
             $this->exec("INSERT INTO users (username, password) VALUES ('test','test');");
             $this->exec("INSERT INTO users (username, password) VALUES ('zeileis','zeileis');");
 
+        // User role, using ENUM (TEXT in sqlite3)
+        } else if ($table == "users_role") {
+            $sql = "CREATE TABLE users_role (\n"
+                  ."  user_id INTEGER NOT NULL,\n"
+                  ."  role    TEXT CHECK(role IN ('participant','mentor','admin') ) "
+                  ."           NOT NULL DEFAULT 'participant',\n"
+                  ."  created Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,\n"
+                  ."  UNIQUE (user_id, role)\n"
+                  .")";
+
+            // Create table
+            if(!$this->exec($sql)) { $this->_create_table_failed($table); }
+
+            $uid = $this->query("SELECT user_id FROM users WHERE username = 'reto';")->fetchArray()["user_id"];
+            $this->exec("INSERT INTO users_role (user_id, role) VALUES (".$uid.", 'participant');");
+            $this->exec("INSERT INTO users_role (user_id, role) VALUES (".$uid.", 'admin');");
+
+            $uid = $this->query("SELECT user_id FROM users WHERE username = 'zeileis';")->fetchArray()["user_id"];
+            $this->exec("INSERT INTO users_role (user_id, role) VALUES (".$uid.", 'participant');");
+            $this->exec("INSERT INTO users_role (user_id, role) VALUES (".$uid.", 'admin');");
+
+            $uid = $this->query("SELECT user_id FROM users WHERE username = 'test';")->fetchArray()["user_id"];
+            $this->exec("INSERT INTO users_role (user_id, role) VALUES (".$uid.", 'participant');");
+
         // Create table which takes up the exercises
         } else if ($table == "exercises") {
             $sql = "CREATE TABLE exercises (\n"
@@ -59,6 +84,7 @@ class DbHandler extends SQLite3 {
                   ."  user_id INT NOT NULL,\n"
                   ."  created Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP\n"
                   .")";
+            print($sql);
             // Create table
             if(!$this->exec($sql)) { $this->_create_table_failed($table); }
 
@@ -100,13 +126,15 @@ class DbHandler extends SQLite3 {
                     $this->exec(sprintf($sql, $u[0], $e[0], $hash));
                 }
             }
+
         } else {
             die(sprintf("No rule to create table \"%s\".", $table));
         }
     }
+
     /* Helper function to throw an error. */
     private function _create_table_failed($name) {
-        die(sprintf("Error creating database table \"%s\".", $table));
+        die(sprintf("Error creating database table \"%s\".", $name));
     }
 
 
