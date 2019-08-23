@@ -60,9 +60,9 @@ exr_compile <- function(file, overwrite = FALSE, verbose = FALSE) {
     # Step 1: render the Rmd file. Store result (html file)
     # in a temporary file which will be parsed in the next steps.
     if (verbose) cat(sprintf("Rendering \"%s\" via rmarkdown\n", file))
-    tempfile = tempfile()
-    render(file, output_file = tempfile, output_format = "html_document", quiet = TRUE,
-           output_options = list(self_contained = FALSE))
+    tempfile = tempfile(fileext = ".html")
+    tmp <- render(file, output_file = tempfile, output_format = "html_document", quiet = TRUE,
+                  output_options = list(self_contained = FALSE))
 
     # Read rendered html file
     if (verbose) cat(sprintf("- Read html file \"%s\"\n", tempfile))

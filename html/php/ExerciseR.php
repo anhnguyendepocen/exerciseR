@@ -18,7 +18,7 @@ class ExerciseR {
         date_default_timezone_set("UTC");
         $this->config       = $config;
 
-        $this->DbHandler    = new DbHandler();
+        $this->DbHandler    = new DbHandler($config->get("sqlite3", "dbfile"));
 
         // Create LoginHandler, does login check on construct
         $this->LoginHandler = new LoginHandler($this->DbHandler);

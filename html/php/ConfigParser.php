@@ -6,7 +6,7 @@ class ConfigParser {
     # Used to store the configuration
     public $data = NULL;
 
-    function __construct($file) {
+    function __construct($file, $relpath = NULL) {
 
         if (!is_file($file)) {
             die(sprintf("Cannot find config file \"%s\".", $file));
@@ -14,6 +14,18 @@ class ConfigParser {
 
         # Read file
         $this->data = parse_ini_file($file, true);
+
+        # If $relpath is specified: modify paths as defined
+        # in the config file (e.g., when ConfigParser is used
+        # in a subdirectory (php) instead of the root directory
+        # of the UI/UX.
+        if (!is_null($relpath)) {
+            foreach($this->data["path"] as $key=>$val) {
+                $this->data["path"][$key] = sprintf("%s/%s", $relpath, $val);
+            }
+            $this->data["sqlite3"]["dbfile"] = sprintf("%s/%s", $relpath,
+                                                       $this->data["sqlite3"]["dbfile"]);
+        }
 
     }
 

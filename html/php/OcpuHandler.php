@@ -11,15 +11,22 @@ class OcpuHandler {
 
     private $exercise_dir = NULL;
 
-    function __construct($dir, $exercise_id, $user_id, $exercise_hash) {
+    function __construct($config, $exercise_id, $user_id, $exercise_hash) {
         
-        if (!is_dir($dir)) {
-            $this->result = array("error" => sprintf("Exercise directory \"%s\" not found", $dir));
+        if (!is_dir($config->get("path", "exercises"))) {
+            $this->result = array("error" => sprintf("Exercise directory \"%s\" not found",
+                                                     $config->get("path", "exercises")));
+            return;
+        }
+        if (!is_dir($config->get("path", "uploads"))) {
+            $this->result = array("error" => sprintf("Uploads directory \"%s\" not found",
+                                                     $config->get("path", "uploads")));
             return;
         }
 
         # Fetching hash
-        $ret = $this->_curl_exec_test($dir, (int)$exercise_id, (int)$user_id, $exercise_hash);
+        $ret = $this->_curl_exec_test($config->get("path", "files"),
+                                      (int)$exercise_id, (int)$user_id, $exercise_hash);
         if (!$ret) {
             error_log("[error] Did not get opencpu execution hash!", 0);
             $this->result = array("error" => "Problems connecting opencpu/get opencpu hash.");
@@ -69,7 +76,7 @@ class OcpuHandler {
         $url        = sprintf("%s/%s", $this->server_url, $this->server_fun);
 
         # Curl data sent (POST)
-        $curl_data  = sprintf("dir=\"%s\"",            $dir);       # where we have the file
+        $curl_data  = sprintf("dir=\"%s/%s\"", getcwd(), $dir);       # where we have the file
         $curl_data .= sprintf("&exercise_id=%d",       $exercise_id);   # Exercise ID
         $curl_data .= sprintf("&user_id=%d",           $user_id);       # Obviously the user ID
         $curl_data .= sprintf("&exercise_hash=\"%s\"", $exercise_hash); # User exercise hash
@@ -81,7 +88,7 @@ class OcpuHandler {
                            CURLOPT_POSTFIELDS     => $curl_data);
 
         ####print("============= curl call ==============\n");
-        ###print_r($curl_args);
+        ####print_r($curl_args);
         // Use CURL to run the script.
         $curl = curl_init();
         curl_setopt_array($curl, $curl_args);

@@ -13,7 +13,7 @@
 #' @return No explicit return, creates output on stdout.
 #'
 #' @import xml2
-#' @importFrom crayon blue green
+#' @import crayon
 #' @export
 check_exercise <- function(dir, exercise_id, user_id, exercise_hash) {
 
@@ -57,6 +57,7 @@ check_exercise <- function(dir, exercise_id, user_id, exercise_hash) {
             src <- sprintf("%s/%s", from, file)
             dst <- sprintf("%s/%s", to, file)
             stopifnot(file.exists(src))
+            cat(red(sprintf("Copy file %s -> %s\n", src, dst)))
             # Copy to current working directory (opencpu, temporary dir)
             file.copy(src, dst)
         }
@@ -70,14 +71,14 @@ check_exercise <- function(dir, exercise_id, user_id, exercise_hash) {
 
     # What we do now: combine the user script with our test script
     # and source this file.
-    tmp <- c(sprintf("%s/main.R", path$user),
-             sprintf("%s/exercise_tests.R", path$exercise))
-    tempfile <- tempfile(fileext = ".R")
-    writeLines(unlist(sapply(tmp, readLines)), tempfile)
-
+    tmp <- c("#' # Your submission",
+             readLines(sprintf("%s/main.R", path$user)),
+             "#' # ExerciseR Tests",
+             readLines(sprintf("%s/exercise_tests.R", path$exercise)))
+    tempfile <- basename(tempfile(fileext = ".R"))
+    writeLines(tmp, tempfile)
 
     # Knitr::spin to convert R->md
-    sink("/dev/null")
     Rmd_file <- knitr::spin(tempfile, format = "Rmd", report = FALSE)
     sink(NULL)
     # Render with rmarkdown -> html
@@ -93,7 +94,7 @@ check_exercise <- function(dir, exercise_id, user_id, exercise_hash) {
     # Adding classes for PASSED/FAILED
     tests_failed <- 0
     tests_count  <- 0
-    for (pre in xml_find_all(content, "pre")) {
+    for (pre in xml_find_all(content, "//*/pre")) {
         code <- xml_find_first(pre, "code")
         if (grepl("----\\sFAILED", xml_text(code))) {
             tests_failed <- tests_failed + 1

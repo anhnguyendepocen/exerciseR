@@ -3,12 +3,8 @@
 
 class DbHandler extends SQLite3 {
 
-    function __construct($dbname = "test.db", $dbdir = ".") {
-         $check = $this->open(sprintf("%s/%s", $dbdir, $dbname));
-         if ($check) {
-             die("Cannot open database connection!");
-         }
-
+    function __construct($db) {
+         $check = $this->open($db);
          // Check required tables, create if not yet existing
          $this->_check_table("users");
          $this->_check_table("exercises");

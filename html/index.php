@@ -140,12 +140,13 @@ require_once("php/FileHandler.php");
 
                     $("#ocpu_summary .round").circleProgress({value: rate});
                     $("#ocpu_summary span").html("Success: " + tests_passed + "/" + tests_total)
-                },
-                error: function(error){
-                    alert("error loading opencpu output xml file");
-                    console.log(error)
-                    console.log(error.name + ": " + error.message);
-                }
+                }////,
+                ////error: function(error){
+                ////    alert("error loading opencpu output xml file");
+                ////    console.log(error)
+                ////    console.log(error.name + ": " + error.message);
+                ////}
+                ///// <<<==== if the file does not exist yet?
             });
         }
 

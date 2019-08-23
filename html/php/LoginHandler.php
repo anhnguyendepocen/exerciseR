@@ -46,14 +46,43 @@ class LoginHandler {
      *
      * No input, no output, simply shows the login form and
      * stops script execution.
+     * TODO: outputs a html document, I am sure there is a nicer way :).
+     * Place login somewhere else or use header/footer from theme.
      */
     private function show_login_form() {
         ?>
-        <form method="POST">
-        <input type="text" name="username" /><br />
-        <input type="password" name="password" /><br />
-        <input type="submit" value="Login" name="submit" /><br />
-        </form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>exerciseR</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/exerciseR.css">
+    <script src="lib/jquery-3.4.1.min.js"></script>
+    <script src="lib/bootstrap-4.2.1.min.js"></script>
+</head>
+<body>
+    <nav id="top-nav" class="navbar navbar-expand-sm bg-primary navbar-light">
+        <img id="exerciserlogo" src="css/logo.svg"></img>
+    </nav>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h1>ExerciseR login</h1>
+                Welcome to the (currently experimental) version of the
+                ExerciseR.<br/>
+                <form method="POST">
+                <input type="text" name="username" /><br />
+                <input type="password" name="password" /><br />
+                <input type="submit" value="Login" name="submit" /><br />
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
         <?php
         // Show login form and stop execution.
         die(0);

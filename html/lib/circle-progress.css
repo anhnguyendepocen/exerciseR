@@ -15,7 +15,7 @@
   margin-top: -50px;
   transform: translate(-50%);
   font-size: 40px;
-  color: #212121;
+  color: #28a745;
   font-weight: 100;
 }
 #ocpu_summary span {
@@ -25,7 +25,7 @@
   margin-top: 5px;
 }
 #ocpu_summary span i {
-  color: #ff5c5c;
+  color: #28a745;
   font-size: 22px;
   margin-right: 6px;
 }
