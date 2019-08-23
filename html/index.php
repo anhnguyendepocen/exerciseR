@@ -15,15 +15,17 @@ require_once("php/FileHandler.php");
 
   <!-- CodeMirror -->
   <link rel="stylesheet" href="lib/codemirror.css">
+  <link rel="stylesheet" href="lib/circle-progress.css">
   <script src="lib/opencpu-0.5.js"></script>
   <script src="lib/codemirror.js"></script>
   <script src="lib/r.js"></script>
   <script src="lib/simpleUpload-1.1.js"></script>
+  <script src="lib/circle-progress.min.js"></script>
   <script>
     // http://simpleupload.michaelcbrook.com/
     $(document).ready(function(){
+        // CodeMirror options
         var CMOpts = {lineNumbers: true, readOnly: true}
-
         // Code styling/highlighting script tab
         var textarea = document.getElementById("script")
         var script   = CodeMirror.fromTextArea(textarea, CMOpts);
@@ -77,7 +79,33 @@ require_once("php/FileHandler.php");
                 CodeMirror.fromTextArea(document.getElementById(id), CMOpts);
             }
         });
-    
+
+
+        // ============================================================
+        // Allow to download files
+        // ============================================================
+        // Takes a URL, param name, and data string
+        // Sends to the server... The server can respond with binary data to download
+        $.fn.download = function(url, postData) {
+            // Build a form
+            var form = $('<form></form>').attr('action', url).attr('method', 'post');
+            // Add the one key/value
+            $.each(postData, function(key, value) {
+                form.append($("<input></input>").attr('type', 'hidden')
+                    .attr('name', key).attr('value', value));
+            });
+            //send request
+            form.appendTo('body').submit().remove();
+        };
+        $("#metainfo ul.exercise.files > li").on("click", function(x) {
+            var file = $(this).html();
+            $.fn.download("getFile.php", {from: "exercises", file: file});
+        });
+
+
+        // ============================================================
+        // Output from opencpu calls
+        // ============================================================
         $.fn.update_tab_ocpuoutput = function() {
             <?php
             $file = sprintf("%s/user-%d/%s/_ocpu_output.html",
@@ -94,6 +122,36 @@ require_once("php/FileHandler.php");
                 }
             });
         }
+
+        $.fn.update_summary_ocpuoutput = function() {
+            $.ajax({
+                type: "POST", url: "getFile.php",
+                data: {from: "uploads", file: "_ocpu_output.xml"},
+                dataType: "xml",
+                success: function(data) {
+                    // Extract values
+                    var tests_total  = parseInt($(data).find("tests").find("total")[0].textContent)
+                    var tests_failed = parseInt($(data).find("tests").find("failed")[0].textContent)
+                    var tests_passed = parseInt($(data).find("tests").find("passed")[0].textContent)
+                    var rate = tests_passed / tests_total; //Math.round(tests_passed / tests_total, 2);
+                    console.log("Ocpu summary: tests " + tests_total + ", " +
+                                "passed: " + tests_passed + ", " +
+                                "failed: " + tests_failed + ", rate: ", rate)
+
+                    $("#ocpu_summary .round").circleProgress({value: rate});
+                    $("#ocpu_summary span").html("Success: " + tests_passed + "/" + tests_total)
+                },
+                error: function(error){
+                    alert("error loading opencpu output xml file");
+                    console.log(error)
+                    console.log(error.name + ": " + error.message);
+                }
+            });
+        }
+
+        // On initialization: try to update output (if files exixt)
+        $.fn.update_tab_ocpuoutput();
+        $.fn.update_summary_ocpuoutput();
 
         // Run script
         $("#btn-run").on("click", function() {
@@ -144,8 +202,9 @@ require_once("php/FileHandler.php");
                             + data.console + "</textarea>");
                         CodeMirror.fromTextArea(document.getElementById("ocpulog"), CMOpts);
     
-                        //ocpulog.setValue(data.return);
+                        // Update output
                         $.fn.update_tab_ocpuoutput();
+                        $.fn.update_summary_ocpuoutput();
                     }
 
                 },

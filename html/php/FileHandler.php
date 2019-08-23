@@ -10,7 +10,7 @@
 # -------------------------------------------------------------------
 # - EDITORIAL:   2019-08-22, RS: Created file on thinkreto.
 # -------------------------------------------------------------------
-# - L@ST MODIFIED: 2019-08-22 17:48 on marvin
+# - L@ST MODIFIED: 2019-08-23 10:36 on marvin
 # -------------------------------------------------------------------
 
 
@@ -42,7 +42,8 @@ class FileHandler {
         header("Content-Type: " . $type);
         header("Content-Transfer-Encoding: Binary");
         header("Content-disposition: attachment; filename=\"" . basename($file) . "\""); 
-        echo readfile($file);
+        readfile($file);
+        die();
     }
 }
 

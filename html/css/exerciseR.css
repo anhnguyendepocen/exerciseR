@@ -59,6 +59,13 @@ ul.exerciser.cmd.blacklist > li { border-color: red; background-color: #ffe6e6; 
 ul.exerciser.cmd.whitelist > li { border-color: #009900; background-color: #e6ffe6; }
 ul.exerciser.files         > li { border-color: #0099e6; background-color: #cceeff; }
 
+/* Styling of the exercise description/details */
+#description h1, #solution h1, #tests h1, #metainfo h1 { font-size: 2em; }
+#description h2, #solution h2, #tests h2, #metainfo h2 { font-size: 1.6em; }
+#description h3, #solution h3, #tests h3, #metainfo h3 { font-size: 1.2em; }
+
+#metainfo ul.exercise.files > li { cursor: pointer; }
+
 /* R Tests */
 div#tests code {
     color: #007bff;

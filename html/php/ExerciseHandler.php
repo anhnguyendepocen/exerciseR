@@ -8,7 +8,7 @@
 # -------------------------------------------------------------------
 # - EDITORIAL:   2019-04-19, RS: Created file on thinkreto.
 # -------------------------------------------------------------------
-# - L@ST MODIFIED: 2019-08-22 20:12 on marvin
+# - L@ST MODIFIED: 2019-08-23 11:03 on marvin
 # -------------------------------------------------------------------
 
 
@@ -189,6 +189,9 @@ class ExerciseHandler {
         ?>
 
         <div class="row">
+          <div class="col-md-12" id="title">
+              <h1><?php print($xml->settings->title); ?></h1>
+          </div>
           <div class="col-md-9" id="description">
               <?php print($description); ?>
           </div>
@@ -202,7 +205,7 @@ class ExerciseHandler {
                 show_ul("Whitelisted", "cmd whitelist", $xml->settings->whitelist->cmd);
             }
             if (property_exists($xml->settings->files, "file")) {
-                show_ul("Files included", "files", $xml->settings->files->file);
+                show_ul("Files included", "exercise files", $xml->settings->files->file);
             }
             ?> 
           </div>
@@ -242,18 +245,37 @@ class ExerciseHandler {
         ?>
 
         <div class="row" style="margin-top: 2em;">
-            <div class="col-sm-6">
+            <div class="col-sm-5">
                 <h4>Upload R Script</h4>
                 <div id="filename"></div>
                 <div id="progress"></div>
                 <div id="progressBar"></div>
                 <input type="file" name="file" class="form-control-file border" />
             </div>
-            <div class="col-sm-6">
+            <div class="col-sm-4">
                 <h4>Run the Script</h4>
                 <button id="btn-run" type="button"
                     class="btn <?php print $btn_run_class; ?>"
                     <?php print($btn_run_disabled ? "disabled" : ""); ?>>Run</button>
+            </div>
+            <div class="col-sm-3" id="ocpu_summary">
+                <div class="round"
+                          data-value="0.0"
+                          data-size="150"
+                          data-thickness="10">
+                          <strong></strong>
+                          <span>Success rate</span>
+                </div>
+                <script>
+                /* Code By Webdevtrick ( https://webdevtrick.com ) */
+                function Circlle(el){
+                  $(el).circleProgress({fill: {color: '#ff5c5c'}})
+                    .on('circle-animation-progress', function(event, progress, stepValue){
+                        $(this).find('strong').text(String(stepValue.toFixed(2)).substr(2)+'%');
+                        });  
+                };
+                Circlle('#ocpu_summary .round');
+                </script>
             </div>
         </div>
 

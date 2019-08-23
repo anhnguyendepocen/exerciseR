@@ -13,7 +13,7 @@
 #' @return No explicit return, creates output on stdout.
 #'
 #' @import xml2
-#' @importFrom crayon blue
+#' @importFrom crayon blue green
 #' @export
 check_exercise <- function(dir, exercise_id, user_id, exercise_hash) {
 
@@ -121,7 +121,8 @@ check_exercise <- function(dir, exercise_id, user_id, exercise_hash) {
     xml_add_child(content,
                   read_xml(paste("<pre id=\"ocpu-tests-failed\">",
                                  "# ExerciseR Test Summary:\nTests faild:",
-                                 sprintf("<span class=\"absolute\">%s</span>", tests_failed),
+                                 sprintf("<span class=\"absolute\">%d/%d</span>",
+                                         tests_failed, tests_count),
                                  sprintf("<span class=\"success\">(Success rate: %.1f percent)</span>",
                                          (tests_count - tests_failed) / tests_count * 100),
                                  "</pre>")),
@@ -130,6 +131,23 @@ check_exercise <- function(dir, exercise_id, user_id, exercise_hash) {
     ocpu_output <- sprintf("%s/_ocpu_output.html", path$user)
     cat(green(sprintf("[exR] Write output into \"%s\"\n", ocpu_output)))
     writeLines(as.character(content), ocpu_output, sep = "\n")
+
+    # Write a small xml file which contains the meta information
+    # about the execution of the user script including
+    # - number of tests run
+    # - number of tests failed
+    # - ...
+    meta <- read_xml("<tests></tests>")
+    xml_add_child(xml_find_first(meta, "/tests"),
+                  read_xml(sprintf("<total>%d</total>", tests_count)))
+    xml_add_child(xml_find_first(meta, "/tests"),
+                  read_xml(sprintf("<passed>%d</passed>", tests_count - tests_failed)))
+    xml_add_child(xml_find_first(meta, "/tests"),
+                  read_xml(sprintf("<failed>%d</failed>", tests_failed)))
+
+    ocpu_meta   <- sprintf("%s/_ocpu_output.xml", path$user)
+    cat(green(sprintf("[exR] Write output into \"%s\"\n", ocpu_meta)))
+    write_xml(meta, ocpu_meta)
 
     # No return!
     invisible(NA)
