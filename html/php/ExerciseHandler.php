@@ -8,7 +8,7 @@
 # -------------------------------------------------------------------
 # - EDITORIAL:   2019-04-19, RS: Created file on thinkreto.
 # -------------------------------------------------------------------
-# - L@ST MODIFIED: 2019-08-23 11:03 on marvin
+# - L@ST MODIFIED: 2019-08-24 09:53 on marvin
 # -------------------------------------------------------------------
 
 
@@ -162,9 +162,24 @@ class ExerciseHandler {
         // User directory. If not existing, create.
         $userdir  = sprintf("%s/user-%d/%s", $this->config->get("path", "uploads"),
                             $_SESSION["user_id"], $hash);
+
+        // Creates user upload directory and adds correct
+        // permissions/group ownership if defined in the config file.
         if(!is_dir($userdir)) {
-            $check = mkdir($userdir, 0777, true);
+            // Load directory permission setting from config file.
+            // If not set, the default of 0775 is used.
+            $check = mkdir($userdir, 0775, true);
             if(!$check) { die("Problems creating the directory! Whoops."); }
+            // Change group if specified in the config file.
+            $group = $this->config->get("permissions", "group", false);
+            if (!is_null($group)) { $check = chgrp($userdir, $group); }
+            if(!$check) { die("Problems changing directory group ownership."); }
+            // Change mode
+            $mode  = $this->config->get("permissions", "dir", false);
+            if (!is_null($mode)) {
+                $check = chmod($userdir, octdec($mode));
+                if(!$check) { die("Problems changing file mode bits."); }
+            }
         }
 
         // Read exercise information
