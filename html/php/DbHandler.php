@@ -148,7 +148,7 @@ class DbHandler extends mysqli {
                   ."  hash        VARCHAR(30),\n"
                   ."  created     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
                   ."  run_counter MEDIUMINT UNSIGNED DEFAULT 0,\n"
-                  ."  run_last    DATETIME DEFAULT NULL,\n"
+                  ."  run_last    DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,\n"
                   ."  status      ENUM('assigned', 'retry', 'solved', 'closed') DEFAULT 'assigned',\n"
                   ."  PRIMARY KEY (mapping_id),\n"
                   ."  UNIQUE (user_id, exercise_id)\n" 

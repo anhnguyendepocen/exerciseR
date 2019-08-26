@@ -1,13 +1,24 @@
 <?php
+# Loading required config
+function __autoload($name) {
+    $file = sprintf("%s.php", $name);
+    try {
+        require($file);
+    } catch (Exception $e) {
+        throw new MissingException("Unable to load \"" . $file . "\".");
+    }
+}
+
+# TODO: pack the whole thing into a more structured form (some functions).
+# and add some try/exceptions, maybe better return to allow the UI to show
+# some error/warning messages to make the debugging simpler.
 
 # Loading required config
-require_once("ConfigParser.php");
 $config = new ConfigParser("../../files/config.ini", "..");
-
 # Loading the exercise class
-require_once("ExerciseR.php");
 $Handler = new ExerciseR($config);
 
+# Check if 
 if (!isset($_SESSION["exercise_hash"])) {
     print(json_encode(array("error" => "exercise_hash not found")));
     die(0);
@@ -22,10 +33,13 @@ $exercise_hash = $_SESSION["exercise_hash"];
 
 // Update database
 $res = $Handler->DbHandler->query(sprintf("SELECT run_counter FROM exercise_mapping "
-                                  ."WHERE hash = '%s';", $exercise_hash))->fetchArray(SQLITE3_ASSOC);
-$Handler->DbHandler->exec(sprintf("UPDATE exercise_mapping SET run_counter = %d, "
-                                 ."run_last = %d WHERE hash = '%s';",
-                                 (int)$res["run_counter"] + 1, time(), $exercise_hash));
+                                  ."WHERE hash = '%s';", $exercise_hash))->fetch_object();
+$sql = sprintf("UPDATE exercise_mapping SET run_counter = %d WHERE hash = '%s';",
+                                 (int)$res->run_counter + 1,
+                                 $exercise_hash);
+if (!$Handler->DbHandler->query($sql)) {
+    throw new Exception("Problems updating run_counter.");
+}
 
 
 // Array which will be returned
@@ -71,7 +85,7 @@ $xml = _load_summary_xml($xml);
 
 $failed = (int)((array)$xml->failed)[0];
 $status = $failed == 0 ? 9 : 1;
-$Handler->DbHandler->exec(sprintf("UPDATE exercise_mapping SET "
+$Handler->DbHandler->query(sprintf("UPDATE exercise_mapping SET "
                                  ."status = %d WHERE hash = '%s';",
                                  (int)$status, $exercise_hash));
 

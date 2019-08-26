@@ -234,10 +234,13 @@ class ExerciseR {
             $rec->run_last = $this->_date_to_string($rec->run_last);
             if ($rec->run_counter == 0) {
                 $rec->run_counter = "";
+            } else if ($rec->run_counter == 1) {
+                $rec->run_counter = "tried once";
             } else {
-                $rec->run_counter = sprintf("<br /><span class=\"text-muted\">"
-                                           ."tried %d times</span>", $rec->run_counter);
+                $rec->run_counter = sprintf("tried %d times", $rec->run_counter);
             }
+            $rec->run_counter = sprintf("<br /><span class=\"text-muted\">"
+                                           ."%s</span>", $rec->run_counter);
             // Show entry
             printf($template, $rec->created, $rec->name,
                    get_btn($rec->hash, $rec->status),
