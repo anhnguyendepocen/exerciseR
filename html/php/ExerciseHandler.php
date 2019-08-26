@@ -8,7 +8,7 @@
 # -------------------------------------------------------------------
 # - EDITORIAL:   2019-04-19, RS: Created file on thinkreto.
 # -------------------------------------------------------------------
-# - L@ST MODIFIED: 2019-08-24 09:53 on marvin
+# - L@ST MODIFIED: 2019-08-26 19:01 on marvin
 # -------------------------------------------------------------------
 
 
@@ -33,23 +33,29 @@ class ExerciseHandler {
     }
 
 
-    private function _load_open_finished_exercises($user_id = NULL, $operator, $status) {
+    private function _load_open_finished_exercises($user_id = NULL, $status) {
 
         // Take SESSION user_id if not specified.
-        if (is_null($user_id)) { $user_id = $_SESSION["user_id"]; }
+        if (is_null($user_id)) { $user_id = $_SESSION["loggedin_as"]; }
         // Fetching exercises
         $sql = "SELECT em.mapping_id, em.hash, e.name, em.created, em.run_counter, "
               ."em.run_last, em.status FROM exercise_mapping AS em "
               ."LEFT JOIN exercises AS e "
-              ."ON em.exercise_id = e.exercise_id WHERE em.user_id = %d AND em.status %s %d "
+              ."ON em.exercise_id = e.exercise_id WHERE em.user_id = %d AND em.status %s "
               ."ORDER BY em.created DESC;";
+        if ($status instanceof string) {
+            $status = sprintf(" = \"%s\"", $status);
+        } else if (is_array($status)) {
+            for ($i = 0; $i < count($status); $i++) { $status[$i] = sprintf("\"%s\"", $status[$i]); }
+            $status = sprintf(" IN (%s)", join(", ", $status));
+        }
         // Open exercises
-        $query = $this->db->query(sprintf($sql, $user_id, $operator, $status));
+        $query = $this->db->query(sprintf($sql, $user_id, $status));
 
         // Create object
         $res = array();
-        while($row = $query->fetchArray(SQLITE3_ASSOC)) {
-            array_push($res, (object)$row);
+        while($row = $query->fetch_object()) {
+            array_push($res, $row);
         }
         return(count($res) == 0 ? NULL : (object)$res);
     }
@@ -61,14 +67,14 @@ class ExerciseHandler {
      * Parameters
      * ==========
      * user_id : int or NULL
-     *      if NULL the $_SESSION["user_id"] is used. 
+     *      if NULL the $_SESSION["loggedin_as"] is used. 
      *
      * Returns
      * =======
      * Returns a stdClass object containing the exercises.
      */
     public function open_exercises($user_id = NULL) {
-        return($this->_load_open_finished_exercises($user_id, "<", 9));
+        return($this->_load_open_finished_exercises($user_id, array("assigned", "retry")));
     }
 
     /* Loading finished exercises for the current user.
@@ -77,14 +83,14 @@ class ExerciseHandler {
      * Parameters
      * ==========
      * user_id : int or NULL
-     *      if NULL the $_SESSION["user_id"] is used. 
+     *      if NULL the $_SESSION["loggedin_as"] is used. 
      *
      * Returns
      * =======
      * Returns a stdClass object containing the exercises.
      */
     public function finished_exercises($user_id = NULL) {
-        return($this->_load_open_finished_exercises($user_id, ">=", 9));
+        return($this->_load_open_finished_exercises($user_id, array("solved", "closed")));
     }
 
 
@@ -161,7 +167,7 @@ class ExerciseHandler {
 
         // User directory. If not existing, create.
         $userdir  = sprintf("%s/user-%d/%s", $this->config->get("path", "uploads"),
-                            $_SESSION["user_id"], $hash);
+                            $_SESSION["loggedin_as"], $hash);
 
         // Creates user upload directory and adds correct
         // permissions/group ownership if defined in the config file.

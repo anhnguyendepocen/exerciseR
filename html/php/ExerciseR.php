@@ -40,7 +40,7 @@ class ExerciseR {
         $this->config       = $config;
 
         require("DbHandler.php");
-        $this->DbHandler = new DbHandler($config->get("sqlite3", "dbfile"));
+        $this->DbHandler = new DbHandler($config);
 
         // Create LoginHandler, does login check on construct
         require("LoginHandler.php");
@@ -261,14 +261,9 @@ class ExerciseR {
 
         // Helper function to generate buttons
         function get_btn($hash, $status) {
-            $btn = "<button type=\"submit\" class=\"btn %s\">%s</button>\n";
-            if ($status == 0) {
-                $btn = sprintf($btn, "btn-primary", "Solve");
-            } else if ($status == 9) {
-                $btn = sprintf($btn, "btn-success", "Solved");
-            } else {
-                $btn = sprintf($btn, "btn-warning", "Retry");
-            }
+            $status = $status == "assigned" ? "solve" : $status;
+            $btn = sprintf("<button type=\"submit\" class=\"btn %1\$s\">%1\$s</button>\n",
+                            $status);
             $res = "<form name=\"%s\" method=\"POST\">\n"
                   ."  <input type=\"hidden\" name=\"exercise\" value=\"%s\" />\n"
                   ."  %s\n"
@@ -298,12 +293,12 @@ class ExerciseR {
 
         // Loading exercise ID
         $sql = "SELECT exercise_id FROM exercise_mapping WHERE hash = \"%s\";";
-        $res = $this->DbHandler->query(sprintf($sql, $hash))->fetchArray(SQLITE3_ASSOC);
+        $res = $this->DbHandler->query(sprintf($sql, $hash))->fetch_object();
 
-        if (count($res) == 0) { die("Whoops, problems finding the exercise!"); }
+        if ($res->num_rows != 0) { die("Whoops, problems finding the exercise!"); }
 
         // Else we have the exercise ID, show exercise
-        $exercise = $this->ExerciseHandler->show_exercise($hash, $res["exercise_id"]);
+        $exercise = $this->ExerciseHandler->show_exercise($hash, $res->exercise_id);
 
     }
 

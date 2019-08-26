@@ -2,12 +2,12 @@
 
 class LoginHandler {
 
-    private $db = NULL;
+    private $DbHandler = NULL;
 
     function __construct($db, $post = NULL) {
 
         // Store database object
-        $this->db = $db;
+        $this->DbHandler = $db;
 
         // Start session
         session_start();
@@ -32,8 +32,9 @@ class LoginHandler {
             if (is_bool($user_id)) {
                 print("Invalid user name or passsword. Try again.\n");
             } else {
-                $_SESSION["user_id"]  = $user_id;
-                $_SESSION["username"] = $post->username;
+                $_SESSION["user_id"]     = (int)$user_id;
+                $_SESSION["loggedin_as"] = (int)$user_id;
+                $_SESSION["username"]    = $post->username;
             }
         }
 
@@ -140,30 +141,42 @@ class LoginHandler {
      *
      * Returns
      * =======
-     * Returns boolean true if login is allowed, else false.
+     * Returns boolean false if login not allowed, else the user_id is returned.
      */
     public function check_login($post) {
 
         $sql = "SELECT user_id FROM users WHERE username = \"%s\" AND password = \"%s\";";
-        $res = (object)$this->db->query(sprintf($sql, $post->username, $post->password))->fetchArray();
-        return(property_exists($res, "user_id") ? $res->user_id : false);
+        $res = (object)$this->DbHandler->query(sprintf($sql, $post->username, $post->password));
+        return($res->num_rows == 0 ? false : $res->fetch_object()->user_id);
 
     }
 
     /* Display logout form.
      */
     public function logout_form($UserClass) {
+        if ($_SESSION["user_id"] == $_SESSION["loggedin_as"]) {
+            $val = "Logout";
+        } else {
+            $val = sprintf("Logout (logged in as %s)", $_SESSION["username"]);
+        }
         ?>
         <form method="POST">
         <input type="hidden" value="logout" name="logout" />
-        <input class="btn btn-info" type="submit" value="Logout (<?php print($_SESSION["username"]); ?>)" name="submit" /><br />
+        <input class="btn btn-info" type="submit" value="<?php print($val); ?>" name="submit" /><br />
         </form>
         <?php
     }
 
     /* Destroy current session */
     private function logout() {
-        session_destroy();
+        if ($_SESSION["user_id"] == $_SESSION["loggedin_as"]) {
+            session_destroy();
+        } else {
+            $user = new UserClass($_SESSION["user_id"], $this->DbHandler);
+            $_SESSION["loggedin_as"]  = $user->user_id();
+            $_SESSION["username"] = $user->username();
+            header("Location: ../index.php");
+        }
     }
 
 }

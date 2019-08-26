@@ -1,7 +1,19 @@
 <?php
+# Loading required config
+function __autoload($name) {
+    $file = sprintf("php/%s.php", $name);
+    try {
+        require($file);
+    } catch (Exception $e) {
+        throw new MissingException("Unable to load \"" . $file . "\".");
+    }
+}
+
+// Loading configuration
+$config = new ConfigParser("../files/config.ini");
+
 # Loading the exercise class
-require_once("php/ExerciseR.php");
-$Handler = new ExerciseR();
+$Handler = new ExerciseR($config);
 $Handler->site_show_header();
 ?>
 

@@ -20,4 +20,4 @@ check:
 	sudo docker run -ti --rm -v "${PWD}":/scripts -w /scripts -u docker r-base Rscript check.R
 
 dev:
-	php -S localhost:5000 -t html
+	php -S localhost:5000 -t html -c _php.ini

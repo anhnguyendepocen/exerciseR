@@ -29,6 +29,7 @@ class ConfigParser {
 
     }
 
+
     /* Returns the property (setting) of a specific section in the config file.
      * 
      * Parameters
@@ -63,13 +64,13 @@ class ConfigParser {
 
     function __toString() {
 
-        $res = "";
+        $res = "Class \"" . get_class($this) . "\"\n-------------------------\n";
         foreach($this->data as $key=>$obj) {
             $tmp = array();
             foreach($obj as $property=>$value) {
                 array_push($tmp, $property);
             }
-            $res .= $key . ":\n   " . join(", ", $tmp) . "\n";
+            $res .= "[" . $key . "]:\n   " . join(", ", $tmp) . "\n";
         }
         return($res);
 

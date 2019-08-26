@@ -40,6 +40,12 @@
 .dockerlogo  { background-image: url("docker-logo.png"); }
 .Rlogo       { background-image: url("R-logo.png"); }
 
+/* Buttons */
+.btn.solve    { background-color: #007bff; color: white; }
+.btn.retry    { background-color: #FFCC33; color: black; }
+.btn.solved   { background-color: #28a745; color: black; }
+.btn.closed   { background-color: #808080; color: white; }
+
 /* Metainfo styling */
 ul.exerciser.cmd, ul.exerciser.files {
     padding: 0;

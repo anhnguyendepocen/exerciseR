@@ -1,17 +1,22 @@
 <?php
 # Loading required config
-require_once("php/ConfigParser.php");
+function __autoload($name) {
+    $file = sprintf("php/%s.php", $name);
+    try {
+        require($file);
+    } catch (Exception $e) {
+        throw new MissingException("Unable to load \"" . $file . "\".");
+    }
+}
+
+// Loading configuration
 $config = new ConfigParser("../files/config.ini");
 
 # Loading the exercise class
-require_once("php/ExerciseR.php");
 $Handler = new ExerciseR($config);
 $Handler->site_show_header();
-
-# Used to load files from the "files" folder ont accessible
-# by the webserver.
-require_once("php/FileHandler.php");
 ?>
+<a href="php/login_as.php?user_id=3">Login as user 3</a>
 
   <!-- CodeMirror -->
   <link rel="stylesheet" href="lib/codemirror.css">

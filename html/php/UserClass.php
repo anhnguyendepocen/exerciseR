@@ -1,6 +1,5 @@
 <?php
 
-
 class UserClass {
 
 
@@ -18,6 +17,10 @@ class UserClass {
      */
     function __construct($user_id, $DbHandler) {
 
+        if (!$DbHandler instanceof DbHandler) {
+            throw new Exception("Wrong input (not an object of class DbHandler)");
+        }
+
         $this->user_id   = $user_id;
         $this->DbHandler = $DbHandler;
 
@@ -26,6 +29,27 @@ class UserClass {
 
 
     }
+
+    /* Return user_id
+     *
+     * Return
+     * =======
+     * Returns the user_id, integer.
+     */
+    public function user_id() { return((int)$this->user_id); }
+
+    /* return username
+     * 
+     * Return
+     * ======
+     * Returns the user name (string).
+     */
+    public function username() {
+        $res = $this->DbHandler->query(sprintf("SELECT username FROM users WHERE user_id = %d", 
+                                               $this->user_id));
+        return($res->fetch_object()->username);
+    }
+
 
     /* Loading user roles
      * 
@@ -36,11 +60,11 @@ class UserClass {
      */
     private function _get_roles() {
 
-        $results = $this->DbHandler->query("SELECT role FROM users_role WHERE user_id == " .
-                                           $this->user_id);
+        $res = $this->DbHandler->query(sprintf("SELECT role FROM users_role WHERE user_id = %d;",
+                                       $this->user_id));
         $roles = array();
-        if ($results->numColumns() == 0) { die("Whoops, this user has no role!"); }
-        while ($rec = $results->fetchArray()) { array_push($roles, $rec["role"]); }
+        if ($res->num_rows == 0) { die("Whoops, this user has no role!"); }
+        while ($rec = $res->fetch_object()) { array_push($roles, $rec->role); }
         return($roles);
 
     }
