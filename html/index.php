@@ -169,48 +169,52 @@ $Handler->site_show_header();
                 dataType: "JSON",
                 success: function(data) {
 
-                    console.log("AJAX Response")
-                    console.log(data)
-                    console.log(data.cmd);
-                    console.log(data.returncode + "  " + data.returnflag)
-                    console.log(data)
-
                     // This is an interface issue, not a problem of the solution
                     if (data.error !== undefined) {
                         alert(data.error);
                     } else {
-                        // If we got an error from R/ocpu: go to log page
-                        if (data.returncode == 0) {
+                        // If we got a "log" (custom log/erro message) jump to 
+                        // opencpu log page.
+                        if (data.log != undefined) {
+                            $(elem).removeClass().addClass("alert")
+                                .addClass("alert-danger")
+                                .html("Something went wrong! Check logs for details.")
+                            var tabid = "#tab-ocpulog"
+                            data.console = data.log // copy
+                        // If the returncode is 0: go to ocpuoutput
+                        } else if (data.returncode == 0) {
                             //$("#tab-ocpulog .alert").removeClass().addClass("alert")
                             $(elem).removeClass().addClass("alert")
                                 .addClass("alert-success")
                                 .html("Test succesfully run, check output!");
                             var tabid = "#tab-ocpuoutput"
-                        // Else switch to output (user output)
+                        // Error: go to log page.
                         } else {
-                            //$("#tab-ocpulog .alert").removeClass().addClass("alert")
                             $(elem).removeClass().addClass("alert")
                                 .addClass("alert-danger")
                                 .html("Something went wrong! Check logs for details.")
-                            var tabid = "#tab-ocplog"
+                            var tabid = "#tab-ocpulog"
                         }
 
                         // Switch tab
                         $(".nav-tabs a[href=\"" + tabid + "\"]").tab("show");
-                        $(".tab-pane.in.active").removeClass("in active")
-                        $(tabid).addClass("in active")
+                        $(".tab-pane.in.active").removeClass("in active");
+    
     
                         // Remove CodeMirror output, re-create (had some
                         // problems when just changing content on inactive tabs)
                         $("#ocpulog").remove();
+                        $(tabid).addClass("in active");
                         $("#tab-ocpulog").find(".CodeMirror").remove()
                         $("#tab-ocpulog").append("<textarea id=\"ocpulog\">"
                             + data.console + "</textarea>");
                         CodeMirror.fromTextArea(document.getElementById("ocpulog"), CMOpts);
-    
+
                         // Update output
-                        $.fn.update_tab_ocpuoutput();
-                        $.fn.update_summary_ocpuoutput();
+                        if (data.log == undefined) {
+                            $.fn.update_tab_ocpuoutput();
+                            $.fn.update_summary_ocpuoutput();
+                        }
                     }
 
                 },

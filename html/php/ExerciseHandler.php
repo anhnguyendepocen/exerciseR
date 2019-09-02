@@ -33,7 +33,7 @@ class ExerciseHandler {
     }
 
 
-    private function _load_open_finished_exercises($user_id = NULL, $status) {
+    private function _load_open_solved_exercises($user_id = NULL, $status) {
 
         // Take SESSION user_id if not specified.
         if (is_null($user_id)) { $user_id = $_SESSION["loggedin_as"]; }
@@ -62,7 +62,7 @@ class ExerciseHandler {
 
 
     /* Loading open exercises for the current user.
-     * Uses the _load_open_finished_exercises function.
+     * Uses the _load_open_solved_exercises function.
      * 
      * Parameters
      * ==========
@@ -74,11 +74,11 @@ class ExerciseHandler {
      * Returns a stdClass object containing the exercises.
      */
     public function open_exercises($user_id = NULL) {
-        return($this->_load_open_finished_exercises($user_id, array("assigned", "retry")));
+        return($this->_load_open_solved_exercises($user_id, array("assigned", "retry")));
     }
 
     /* Loading finished exercises for the current user.
-     * Uses the _load_open_finished_exercises function.
+     * Uses the _load_open_solved_exercises function.
      * 
      * Parameters
      * ==========
@@ -89,8 +89,8 @@ class ExerciseHandler {
      * =======
      * Returns a stdClass object containing the exercises.
      */
-    public function finished_exercises($user_id = NULL) {
-        return($this->_load_open_finished_exercises($user_id, array("solved", "closed")));
+    public function solved_exercises($user_id = NULL) {
+        return($this->_load_open_solved_exercises($user_id, array("solved", "closed")));
     }
 
 

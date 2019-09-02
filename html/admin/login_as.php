@@ -1,7 +1,7 @@
 <?php
 # Loading required config
 function __autoload($name) {
-    $file = sprintf("%s.php", $name);
+    $file = sprintf("../php/%s.php", $name);
     try {
         require($file);
     } catch (Exception $e) {

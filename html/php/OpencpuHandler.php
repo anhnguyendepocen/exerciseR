@@ -1,6 +1,6 @@
 <?php
 
-class OcpuHandler {
+class OpencpuHandler {
 
 
     private $server_url  = "localhost:5656";
@@ -8,11 +8,12 @@ class OcpuHandler {
     //private $server_path = "ocpu/library";
     private $server_fun  = "ocpu/library/exerciser/R/check_exercise";
     private $result = NULL;
+    private $_returncode = -9;
 
     private $exercise_dir = NULL;
 
     function __construct($config, $exercise_id, $user_id, $exercise_hash) {
-        
+
         if (!is_dir($config->get("path", "exercises"))) {
             $this->result = array("error" => sprintf("Exercise directory \"%s\" not found",
                                                      $config->get("path", "exercises")));
@@ -27,7 +28,11 @@ class OcpuHandler {
         # Fetching hash
         $ret = $this->_curl_exec_test($config->get("path", "files"),
                                       (int)$exercise_id, (int)$user_id, $exercise_hash);
-        if (!$ret) {
+        if (empty($ret)) {
+            error_log("[error] No response from opencpu - service offline?", 0);
+            $this->result = array("error" => "No response from opencpu: service not running.");
+            return;
+        } else if (!$ret) {
             error_log("[error] Did not get opencpu execution hash!", 0);
             $this->result = array("error" => "Problems connecting opencpu/get opencpu hash.");
             return;
@@ -36,15 +41,19 @@ class OcpuHandler {
         # If this worked: extract hash
         $ocpu = $this->_extract_hash($ret);
         if (!$ocpu) {
-            $this->result = array("error" => "Problems extracting the temporary hash.");
-            $this->returncode = 999;
+            error_log("[error] Cannot extract hash, check function failed. Return error message.");
+            $this->result = array("log" => $ret);
+            $this->_returncode = 999;
             return;
         }
 
-        # Loading console output
+        # Else: all fine. Loading console output
         $this->result = $this->_curl_get_return($ocpu->path, $ocpu->hash, "console/text");
+        $this->_returncode = 0;
 
     }
+
+    public function returncode() { return($this->_returncode); }
 
     public function has_result() {
         // no data
@@ -87,15 +96,17 @@ class OcpuHandler {
                            CURLOPT_POST           => true,
                            CURLOPT_POSTFIELDS     => $curl_data);
 
-        ####print("============= curl call ==============\n");
-        ####print_r($curl_args);
+        error_log("============= curl call ==============");
+        foreach($curl_args as $key=>$val) {
+            error_log(sprintf("[curl %s]: %s", $key, $val));
+        }
         // Use CURL to run the script.
         $curl = curl_init();
         curl_setopt_array($curl, $curl_args);
         $response = curl_exec($curl);
         curl_close($curl);
-        ####print_r($response);
-        ####print("=========== end curl call ============\n");
+        if (!empty($response)) { foreach(explode("\n", $response) as $line) { error_log($line); } }
+        error_log("=========== end curl call ============");
         return($response);
     }
 

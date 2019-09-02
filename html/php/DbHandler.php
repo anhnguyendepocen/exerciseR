@@ -22,6 +22,7 @@ class DbHandler extends mysqli {
 
         // Check required tables, create if not yet existing
         $this->_check_table($this->config->get("mysql", "database"), "users");
+        $this->_check_table($this->config->get("mysql", "database"), "groups");
         $this->_check_table($this->config->get("mysql", "database"), "users_role");
         $this->_check_table($this->config->get("mysql", "database"), "exercises");
         $this->_check_table($this->config->get("mysql", "database"), "exercise_mapping");
@@ -87,6 +88,19 @@ class DbHandler extends mysqli {
             $this->query("INSERT INTO users (username, password) VALUES ('reto','reto');");
             $this->query("INSERT INTO users (username, password) VALUES ('test','test');");
             $this->query("INSERT INTO users (username, password) VALUES ('zeileis','zeileis');");
+
+        // Groups table
+        } else if ($table == "groups") {
+            $sql = "CREATE TABLE groups (\n"
+                  ."  group_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,\n"
+                  ."  groupname VARCHAR(50) NOT NULL,\n"
+                  ."  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
+                  ."  PRIMARY KEY (group_id)"
+                  .")";
+
+            // Create table
+            if(!$this->query($sql)) { throw new Exception(sprintf("Table creation failed "
+                ." (%s; %d): %s", $table, $this->connect_errno, $this->connect_error)); }
 
         // User role, using ENUM (TEXT in sqlite3)
         } else if ($table == "users_role") {

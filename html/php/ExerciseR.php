@@ -255,9 +255,9 @@ class ExerciseR {
 
     private function _show_content_overview() {
 
-        // Loading open and finished exercises
-        $open     = $this->ExerciseHandler->open_exercises();
-        $finished = $this->ExerciseHandler->finished_exercises();
+        // Loading open and solved exercises
+        $open   = $this->ExerciseHandler->open_exercises();
+        $solved = $this->ExerciseHandler->solved_exercises();
 
         // Open bootstrap container
         print("<div class=\"container\">\n");
@@ -283,9 +283,9 @@ class ExerciseR {
         }
 
         // Show open
-        if (!is_null($finished)) {
+        if (!is_null($solved)) {
             print("<h3>Finished exercises</h3>\n");
-            $this->_show_list($finished);
+            $this->_show_list($solved);
         }
 
         // Close bootstrap container

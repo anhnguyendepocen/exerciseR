@@ -80,7 +80,7 @@ check_exercise <- function(dir, exercise_id, user_id, exercise_hash) {
 
     # Knitr::spin to convert R->md
     Rmd_file <- knitr::spin(tempfile, format = "Rmd", report = FALSE)
-    sink(NULL)
+
     # Render with rmarkdown -> html
     opts <- list(self_contained = TRUE, mathjax = TRUE)
     html_file <- rmarkdown::render(Rmd_file,
@@ -92,29 +92,48 @@ check_exercise <- function(dir, exercise_id, user_id, exercise_hash) {
     xml_attr(content, "id") <- "ocpuoutput-response"
 
     # Adding classes for PASSED/FAILED
-    tests_failed <- 0
-    tests_count  <- 0
-    for (pre in xml_find_all(content, "//*/pre")) {
-        code <- xml_find_first(pre, "code")
-        if (grepl("----\\sFAILED", xml_text(code))) {
-            tests_failed <- tests_failed + 1
-            if (is.na(xml_attr(pre, "class"))) {
-                xml_attr(pre, "class") <- "failed"
-            } else {
-                xml_attr(pre, "class") <- paste(xml_attr(pre, "class"), "failed")
-            }
-        } else if (grepl("----\\sPASSED", xml_text(code))) {
-            if (is.na(xml_attr(pre, "class"))) {
-                xml_attr(pre, "class") <- "passed"
-            } else {
-                xml_attr(pre, "class") <- paste(xml_attr(pre, "class"), "passed")
+    add_class_count_tests <- function(content, id) {
+        # Used as return
+        tests <- list(failed = 0, passed = 0, total = NA)
+
+        # Find 'pre' entries
+        xpath <- sprintf("//*/div[@id='%s']/pre", id)
+        for (pre in xml_find_all(content, xpath)) {
+            code <- xml_find_first(pre, "code")
+            if (grepl("----\\sFAILED", xml_text(code))) {
+                tests$failed <- tests$failed + 1
+                if (is.na(xml_attr(pre, "class"))) {
+                    xml_attr(pre, "class") <- "failed"
+                } else {
+                    xml_attr(pre, "class") <- paste(xml_attr(pre, "class"), "failed")
+                }
+            } else if (grepl("##\\sError", xml_text(code), perl = TRUE)) {
+                tests$failed <- tests$failed + 1
+                if (is.na(xml_attr(pre, "class"))) {
+                    xml_attr(pre, "class") <- "error"
+                } else {
+                    xml_attr(pre, "class") <- paste(xml_attr(pre, "class"), "error")
+                }
+            } else if (grepl("----\\sPASSED", xml_text(code))) {
+                tests$passed <- tests$passed + 1
+                if (is.na(xml_attr(pre, "class"))) {
+                    xml_attr(pre, "class") <- "passed"
+                } else {
+                    xml_attr(pre, "class") <- paste(xml_attr(pre, "class"), "passed")
+                }
             }
         }
-        # Test count
-        if (grepl("----\\s(PASSED|FAILED)", xml_text(code))) {
-            tests_count <- tests_count + 1
-        }
+
+        # Sump up failed and passed tests (total count)
+        tests$total <- tests$failed + tests$passed
+        invisible(tests)
     }
+
+    # User submission: just add css classes (color), ignore counts (return)
+    add_class_count_tests(content, "your-submission")
+
+    # Exerciser tests: add css classes (color), store return.
+    tests <- add_class_count_tests(content, "exerciser-tests")
 
     # Adding a special HTML element which contains the number of
     # tests failed. Used by the UI/UX to decide whether or not the user
@@ -123,9 +142,9 @@ check_exercise <- function(dir, exercise_id, user_id, exercise_hash) {
                   read_xml(paste("<pre id=\"ocpu-tests-failed\">",
                                  "# ExerciseR Test Summary:\nTests faild:",
                                  sprintf("<span class=\"absolute\">%d/%d</span>",
-                                         tests_failed, tests_count),
+                                         tests$failed, tests$total),
                                  sprintf("<span class=\"success\">(Success rate: %.1f percent)</span>",
-                                         (tests_count - tests_failed) / tests_count * 100),
+                                         tests$passed / tests$total * 100),
                                  "</pre>")),
                   .where = 0L)
 
@@ -140,11 +159,11 @@ check_exercise <- function(dir, exercise_id, user_id, exercise_hash) {
     # - ...
     meta <- read_xml("<tests></tests>")
     xml_add_child(xml_find_first(meta, "/tests"),
-                  read_xml(sprintf("<total>%d</total>", tests_count)))
+                  read_xml(sprintf("<total>%d</total>", tests$total)))
     xml_add_child(xml_find_first(meta, "/tests"),
-                  read_xml(sprintf("<passed>%d</passed>", tests_count - tests_failed)))
+                  read_xml(sprintf("<passed>%d</passed>", tests$total - tests$failed)))
     xml_add_child(xml_find_first(meta, "/tests"),
-                  read_xml(sprintf("<failed>%d</failed>", tests_failed)))
+                  read_xml(sprintf("<failed>%d</failed>", tests$failed)))
 
     ocpu_meta   <- sprintf("%s/_ocpu_output.xml", path$user)
     cat(green(sprintf("[exR] Write output into \"%s\"\n", ocpu_meta)))

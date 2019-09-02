@@ -1,13 +1,17 @@
 <?php
+# Loading required config
+function __autoload($name) {
+    $file = sprintf("../php/%s.php", $name);
+    try {
+        require($file);
+    } catch (Exception $e) {
+        throw new MissingException("Unable to load \"" . $file . "\".");
+    }
+}
 
-require_once("../php/ConfigParser.php");
 $config = new ConfigParser("../../files/config.ini", "..");
-
-require_once("../php/DbHandler.php");
-$db = new DbHandler($config->get("sqlite3", "dbfile"));
-
-require_once("../php/LoginHandler.php");
-$LoginHandler = new LoginHandler($db);
+$DbHandler = new DbHandler($config);
+$LoginHandler = new LoginHandler($DbHandler);
 
 # Convert _POST to object.
 # TODO: WARNING: needs to be POST!
@@ -16,6 +20,7 @@ if (empty($_POST)) { $post->what = "empty"; }
 
 $post = (object)$_REQUEST;
 if (empty($_REQUEST)) { $post->what = "empty"; }
+if (!property_exists($post, "limit")) { $post->limit = 10; }
 
 # Default return value (will be re-defined below)
 $rval = array("error" => sprintf("Don't know what to do with \"%s\".", $post->what));
@@ -26,8 +31,7 @@ switch($post->what) {
     # ---------------------------------------
     case "exercises":
 
-        if (!property_exists($post, "limit")) { $post->limit = 10; }
-        $result = $db->query("SELECT u.username, e.* from exercises AS e "
+        $result = $DbHandler->query("SELECT u.username, e.* from exercises AS e "
                             ."LEFT OUTER JOIN users aS u "
                             ."ON u.user_id = e.user_id "
                             ."ORDER BY created DESC "
@@ -49,6 +53,26 @@ switch($post->what) {
         }
 
         break;
+
+    case "groups":
+
+        $res = $DbHandler->query("SELECT * FROM groups LIMIT " . sprintf("%d", $post->limit));
+        if ($res) {
+            $rval = array();
+            while($tmp = $res->fetch_object()) { array_push($rval, $tmp); }
+        }
+        break;
+
+    case "users":
+
+        $res = $DbHandler->query("SELECT user_id, username FROM users "
+                                ." ORDER BY username ASC LIMIT " . sprintf("%d", $post->limit));
+        if ($res) {
+            $rval = array();
+            while($tmp = $res->fetch_object()) { array_push($rval, $tmp); }
+        }
+        break;
+
 
 } # End switch
 

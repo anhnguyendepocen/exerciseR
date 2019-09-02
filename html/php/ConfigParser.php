@@ -23,8 +23,6 @@ class ConfigParser {
             foreach($this->data["path"] as $key=>$val) {
                 $this->data["path"][$key] = sprintf("%s/%s", $relpath, $val);
             }
-            $this->data["sqlite3"]["dbfile"] = sprintf("%s/%s", $relpath,
-                                                       $this->data["sqlite3"]["dbfile"]);
         }
 
     }

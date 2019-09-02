@@ -95,5 +95,6 @@ div#tests .test-invisible {
 }
 #ocpuoutput-response pre.failed { background-color: #F7ECEE; color: #441507; }
 #ocpuoutput-response pre.passed { background-color: #F1F7EC; }
+#ocpuoutput-response pre.error  { background-color: #F7ECEE; color: red; }
 
 
