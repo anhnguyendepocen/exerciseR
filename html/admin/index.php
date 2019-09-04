@@ -13,7 +13,8 @@ function __autoload($name) {
 $config = new ConfigParser("../../files/config.ini", "..");
 
 # Loading the exercise class
-$Handler = new AdmineR($config, true);
+$HandlerOptions = array("js"=>array("../lib/exr_admin.js"));
+$Handler = new AdmineR($config, $HandlerOptions, true);
 $Handler->site_show_header();
 
 # Used to load files from the "files" folder ont accessible

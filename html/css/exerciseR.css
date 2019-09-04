@@ -97,4 +97,21 @@ div#tests .test-invisible {
 #ocpuoutput-response pre.passed { background-color: #F1F7EC; }
 #ocpuoutput-response pre.error  { background-color: #F7ECEE; color: red; }
 
+/* Boostrap table styling */
+
+/* active/inactive gorups, users, .... */
+table.table tbody tr.inactive { background-color: #F7ECEE; }
+table.table tbody tr span.meta { color: gray; font-size: .8em; }
+table.table tbody tr:hover span.meta { color: black; }
+table.table tr .center { text-align: center; }
+table.table tr .ID { font-weight: bold; min-width: 3em; }
+
+table.table tbody tr span.exercise.assigned { color: #007bff; }
+table.table tbody tr span.exercise.retry    { color: #FFCC33; }
+table.table tbody tr span.exercise.solved   { color: #28a745; }
+table.table tbody tr span.exercise.closed   { color: #808080; }
+
+
+
+
 

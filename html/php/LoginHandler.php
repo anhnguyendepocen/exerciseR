@@ -3,6 +3,7 @@
 class LoginHandler {
 
     private $DbHandler = NULL;
+    private $UserClass = NULL;
 
     function __construct($db, $post = NULL) {
 
@@ -53,14 +54,14 @@ class LoginHandler {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/exerciseR.css">
-    <script src="lib/jquery-3.4.1.min.js"></script>
-    <script src="lib/bootstrap-4.2.1.min.js"></script>
+    <link rel="stylesheet" href="../css/bootstrap.4.1.2.min.css">
+    <link rel="stylesheet" href="../css/exerciseR.css">
+    <script src="../lib/jquery-3.4.1.min.js"></script>
+    <script src="../lib/bootstrap-4.2.1.min.js"></script>
 </head>
 <body>
     <nav id="top-nav" class="navbar navbar-expand-sm bg-primary navbar-light">
-        <img id="exerciserlogo" src="css/logo.svg"></img>
+        <img id="exerciserlogo" src="../css/logo.svg"></img>
         <ul class="navbar-nav">
             <li class="nav-item">
                 <?php $this->logout_form($this->UserClass); ?>
@@ -101,7 +102,7 @@ class LoginHandler {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap.4.1.2.min.css">
     <link rel="stylesheet" href="css/exerciseR.css">
     <script src="lib/jquery-3.4.1.min.js"></script>
     <script src="lib/bootstrap-4.2.1.min.js"></script>
@@ -145,7 +146,7 @@ class LoginHandler {
      */
     public function check_login($post) {
 
-        $sql = "SELECT user_id FROM users WHERE username = \"%s\" AND password = \"%s\";";
+        $sql = "SELECT user_id FROM users WHERE username = \"%s\" AND password = md5(\"%s\");";
         $res = (object)$this->DbHandler->query(sprintf($sql, $post->username, $post->password));
         return($res->num_rows == 0 ? false : $res->fetch_object()->user_id);
 

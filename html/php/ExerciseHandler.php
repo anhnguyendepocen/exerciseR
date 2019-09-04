@@ -153,6 +153,23 @@ class ExerciseHandler {
      */
     public function show_exercise($hash, $exercise_id) {
 
+        if (is_null($hash) | is_null($exercise_id)) {
+            var_dump($hash); var_dump($exercise_id);
+            ?>
+            <h3>Sorry!</h3>
+            <p>
+            Problems loading the exercise, invalid hash/id.
+            Go back to "<a href="index.php" target="_self">exercises</a>"
+            and try it again.</p>
+            <p>
+            If the problem remains, this might be
+            an issue with the ExerciseR. In this case, try to contact your
+            administrator.
+            </p>
+            <?php
+            return;
+        }
+
         // The files we will use
         $exdir = sprintf("%s/%d", $this->config->get("path", "exercises"), $exercise_id);
         $files = array("xml"         => sprintf("%s/%s", $exdir, "exercise.xml"),

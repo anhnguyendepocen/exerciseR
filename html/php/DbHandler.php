@@ -74,8 +74,12 @@ class DbHandler extends mysqli {
         if ($table == "users") {
             $sql = "CREATE TABLE users (\n"
                   ."  user_id  SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,\n"
-                  ."  username VARCHAR(50) NOT NULL,\n"
+                  ."  username VARCHAR(20) NOT NULL,\n"
+                  ."  displayname VARCHAR(50) NOT NULL,\n"
+                  ."  email    VARCHAR(100) NOT NULL,\n"
                   ."  password VARCHAR(50) NOT NULL, \n"
+                  ."  status  ENUM('active', 'inactive') DEFAULT 'active',\n"
+                  ."  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
                   ."  PRIMARY KEY (user_id),\n"
                   ."  UNIQUE (username)\n"
                   .")";
@@ -85,15 +89,22 @@ class DbHandler extends mysqli {
                 ." (%s; %d): %s", $table, $this->connect_errno, $this->connect_error)); }
 
             ## TODO insert demo data
-            $this->query("INSERT INTO users (username, password) VALUES ('reto','reto');");
-            $this->query("INSERT INTO users (username, password) VALUES ('test','test');");
-            $this->query("INSERT INTO users (username, password) VALUES ('zeileis','zeileis');");
+            $this->query("INSERT INTO users (username, displayname, password, email) VALUES "
+                        ."('reto', 'Reto Stauffer', md5('reto'), 'reto.stauffer@uibk.ac.at');");
+            $this->query("INSERT INTO users (username, displayname, password, email) VALUES "
+                        ."('test', 'Some Test User', md5('test'), 'foo@bar.com');");
+            $this->query("INSERT INTO users (username, displayname, password, email) VALUES "
+                        ."('zeileis', 'Achim  Zeileis', md5('zeileis'), 'Achim.Zeileis@uibk.ac.at');");
+            $this->query("INSERT INTO users (username, displayname, password, email, status) VALUES "
+                        ."('deadman', 'Deadman', md5('deadman'), 'test@user.com', 'inactive');");
 
         // Groups table
         } else if ($table == "groups") {
             $sql = "CREATE TABLE groups (\n"
                   ."  group_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,\n"
                   ."  groupname VARCHAR(50) NOT NULL,\n"
+                  ."  description VARCHAR(300),\n"
+                  ."  status  ENUM('active', 'inactive') DEFAULT 'active',\n"
                   ."  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
                   ."  PRIMARY KEY (group_id)"
                   .")";
@@ -102,11 +113,19 @@ class DbHandler extends mysqli {
             if(!$this->query($sql)) { throw new Exception(sprintf("Table creation failed "
                 ." (%s; %d): %s", $table, $this->connect_errno, $this->connect_error)); }
 
+            // Demo data
+            $this->query("INSERT INTO groups (groupname, description, status) VALUES "
+                        ."('S2018', 'R programming class S2019', 'inactive');");
+            $this->query("INSERT INTO groups (groupname, description) VALUES "
+                        ."('W2019', 'R programming class W2019');");
+            $this->query("INSERT INTO groups (groupname, description) VALUES "
+                        ."('test', 'test class');");
+
         // User role, using ENUM (TEXT in sqlite3)
         } else if ($table == "users_role") {
             $sql = "CREATE TABLE users_role (\n"
                   ."  user_id MEDIUMINT UNSIGNED NOT NULL,\n"
-                  ."  role    ENUM('participant','mentor','admin'),\n"
+                  ."  role    ENUM('participant','mentor','admin') DEFAULT 'participant',\n"
                   ."  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
                   ."  UNIQUE (user_id, role)\n"
                   .")";
@@ -137,6 +156,7 @@ class DbHandler extends mysqli {
                   ."  description VARCHAR(50) NOT NULL,\n"
                   ."  user_id     MEDIUMINT UNSIGNED NOT NULL,\n"
                   ."  created     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
+                  ."  status  ENUM('active', 'inactive') DEFAULT 'active',\n"
                   ."  PRIMARY KEY (exercise_id)\n"
                   .")";
 

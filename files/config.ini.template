@@ -1,5 +1,19 @@
 
+[system]
 
+webmaster  = reto.stauffer@uibk.ac.at
+url        = http://localhost:5001
+
+[phpmailer]
+
+host        = stmp.uibk.ac.at
+user        = *********
+password    = *********
+port        = 587
+auth        = true
+secure      = tls
+sender      = Reto.Stauffer@uibk.ac.at
+sender_name = [ExerciseR] Reto Stauffer
 
 [path]
 # Relatively simple config file.

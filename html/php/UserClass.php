@@ -75,7 +75,7 @@ class UserClass {
      * ======
      * Boolean true if the user has admin privileges, else false.
      */
-    function is_admin() {
+    public function is_admin() {
         return(in_array("admin", $this->roles) ? true : false);
     }
 

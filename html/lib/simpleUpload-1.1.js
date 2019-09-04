@@ -1724,8 +1724,6 @@ else window.attachEvent("onmessage", simpleUpload.postMessageCallback);
 
   };
 
-    console.log("simpleUpload sourced")
-
   //allow getting/setting the simpleUpload.maxUploads variable
 
   $.fn.simpleUpload.maxSimultaneousUploads = function(num){

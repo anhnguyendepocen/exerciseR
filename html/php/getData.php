@@ -18,8 +18,8 @@ $LoginHandler = new LoginHandler($DbHandler);
 $post = (object)$_POST;
 if (empty($_POST)) { $post->what = "empty"; }
 
-$post = (object)$_REQUEST;
-if (empty($_REQUEST)) { $post->what = "empty"; }
+/////testing////$post = (object)$_REQUEST;
+/////testing////if (empty($_REQUEST)) { $post->what = "empty"; }
 if (!property_exists($post, "limit")) { $post->limit = 10; }
 
 # Default return value (will be re-defined below)
@@ -28,51 +28,54 @@ $rval = array("error" => sprintf("Don't know what to do with \"%s\".", $post->wh
 # Loading available exercises
 switch($post->what) {
 
-    # ---------------------------------------
-    case "exercises":
-
-        $result = $DbHandler->query("SELECT u.username, e.* from exercises AS e "
-                            ."LEFT OUTER JOIN users aS u "
-                            ."ON u.user_id = e.user_id "
-                            ."ORDER BY created DESC "
-                            ."LIMIT " . sprintf("%d", $post->limit));
-
-        $rval      = new stdClass();
-        $midnight  = floor((int)date("U") / 86400) * 86400;
-        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-            $id = $row["exercise_id"];
-            # Age
-            $ts = strtotime($row["created"]); # Time stamp (unix time stamp)
-            $fmt = $config->get("datetime format", $ts < $midnight ? "date" : "time");
-            $created = date($fmt, $ts);
-            # Append
-            $rval->$id = array("ID"      => $row["exercise_id"],
-                               "created" => $created,
-                               "name"    => $row["name"],
-                               "creator" => $row["username"]);
-        }
-
-        break;
-
-    case "groups":
-
-        $res = $DbHandler->query("SELECT * FROM groups LIMIT " . sprintf("%d", $post->limit));
-        if ($res) {
-            $rval = array();
-            while($tmp = $res->fetch_object()) { array_push($rval, $tmp); }
-        }
-        break;
-
+    // --------------------------------
     case "users":
 
-        $res = $DbHandler->query("SELECT user_id, username FROM users "
-                                ." ORDER BY username ASC LIMIT " . sprintf("%d", $post->limit));
+        $res = $DbHandler->query("SELECT user_id, username, status, created FROM users "
+                                ." ORDER BY created DESC LIMIT " . sprintf("%d", $post->limit));
         if ($res) {
             $rval = array();
             while($tmp = $res->fetch_object()) { array_push($rval, $tmp); }
         }
         break;
 
+
+    // --------------------------------
+    case "exercises":
+
+        $sql = "SELECT e.*, u.username AS created_by, "
+            ."CASE WHEN ea.count IS NULL THEN 0 ELSE ea.count END AS count_assigned, "
+            ."CASE WHEN er.count IS NULL THEN 0 ELSE er.count END AS count_retry, "
+            ."CASE WHEN es.count IS NULL THEN 0 ELSE es.count END AS count_solved, "
+            ."CASE WHEN ec.count IS NULL THEN 0 ELSE ec.count END AS count_closed "
+            ."FROM exercises AS e "
+            ."LEFT JOIN users AS u on e.user_id = u.user_id "
+            ."LEFT JOIN (SELECT exercise_id, count(*) AS count FROM exercise_mapping "
+            ."WHERE status = 'assigned' GROUP BY exercise_id) AS ea ON ea.exercise_id = e.exercise_id "
+            ."LEFT JOIN (SELECT exercise_id, count(*) AS count FROM exercise_mapping "
+            ."WHERE status = 'retry' GROUP BY exercise_id) AS er ON er.exercise_id = e.exercise_id "
+            ."LEFT JOIN (SELECT exercise_id, count(*) AS count FROM exercise_mapping "
+            ."WHERE status = 'solved' GROUP BY exercise_id) AS es ON es.exercise_id = e.exercise_id "
+            ."LEFT JOIN (SELECT exercise_id, count(*) AS count FROM exercise_mapping "
+            ."WHERE status = 'closed' GROUP BY exercise_id) AS ec ON ec.exercise_id = e.exercise_id "
+            ."ORDER BY u.created DESC LIMIT " . sprintf("%d", $post->limit);
+        $res = $DbHandler->query($sql);
+        if ($res) {
+            $rval = array();
+            while($tmp = $res->fetch_object()) { array_push($rval, $tmp); }
+        }
+        break;
+
+    // --------------------------------
+    case "groups":
+
+        $res = $DbHandler->query("SELECT * FROM groups ORDER BY groupname "
+                                ."LIMIT " . sprintf("%d", $post->limit));
+        if ($res) {
+            $rval = array();
+            while($tmp = $res->fetch_object()) { array_push($rval, $tmp); }
+        }
+        break;
 
 } # End switch
 

@@ -6,7 +6,7 @@ $config = new ConfigParser("../../files/config.ini", "..");
 # Loading the exercise class
 require_once("../php/ExerciseR.php");
 require_once("../php/AdmineR.php");
-$Handler = new AdmineR($config, true);
+$Handler = new AdmineR($config, NULL, true);
 $Handler->site_show_header();
 
 # Used to load files from the "files" folder ont accessible

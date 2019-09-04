@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema version="1.0"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+<!--
+XLS schema to validate bulk-uploads of new users added
+to the exerciseR. The xml file needs to have the following structure:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<users>
+    <user>
+        <username>foo_bar</username>
+        <displayname>Mister Foo. Bar</displayname>
+        <email>email@foo.bar</email>
+    </user>
+    <user>
+        <username>john</username>
+        <email>john@doe.com</email>
+    </user>
+</users>
+
+The <users> element contains <user> definitions. The <user>
+chlid node has to occur at least once, and can occur up to
+500 times (adding 500 users at the same time).
+Each <user> node consists of two elements, namely the
+username and the email.
+- username: can contain [a-zA-Z0-9_-], length 4 to 20
+- displayname: a string with 5-50 characters
+- email: has to be a valid email address
+- username/email: the order does not matter.
+-->
+
+<!-- root node 'users', contains 'user' entries -->
+<xsd:element name="users">
+  <xsd:complexType>
+    <xsd:sequence>
+      <!-- user definition: has to occur at least once but up to 500 times -->
+      <xsd:element name="user" minOccurs="1" maxOccurs="500">
+        <xsd:complexType>
+          <xsd:all>
+            <!-- username -->
+            <xsd:element name="username">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                  <xsd:pattern value="[a-zA-Z0-9_-]+"/>
+                  <xsd:minLength value="4"/>
+                  <xsd:maxLength value="20"/>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+            <!-- username -->
+            <xsd:element name="displayname">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                  <xsd:minLength value="5"/>
+                  <xsd:maxLength value="50"/>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+            <!-- email address -->
+            <xsd:element name="email">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                  <xsd:pattern value="[^@]+@[^\.]+\..+"/>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+  </xsd:sequence>
+  </xsd:complexType>
+</xsd:element>
+
+</xsd:schema>

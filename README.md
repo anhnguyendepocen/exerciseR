@@ -21,6 +21,14 @@ In more detail:
 * `html`: contains the frontend (UI/UX).
 * `exerciser`: contains the _R_ package used as API between UI and opencpu.
 
+# Requirements
+
+* Requires:
+    * `php-mail` (and `sendmail`)
+    * `php-mysql`
+    * `php-xml`
+    * pear mailer (`pear install --alldeps Mail`)
+
 # Config files
 
 * `cd /etc/opencpu/server.conf`. Don't forget to restart service after making changes.

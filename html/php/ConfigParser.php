@@ -56,7 +56,14 @@ class ConfigParser {
             if (!$stop) { return(NULL); }
             exit(sprintf("Cannot find config property \"%s > %s\".", $section, $property));
         }
-        return($this->data[$section][$property]);
+        //return($this->data[$section][$property]);
+        $x = trim($this->data[$section][$property]);
+        if      (preg_match("/^[\+\-0-9]+$/", $x))    { $x = (int)$x; }
+        else if (preg_match("/^[\+\-0-9\\.]+$/", $x)) { $x = (float)$x; }
+        else if (preg_match("/^true$/", $x))          { $x = true; }
+        else if (preg_match("/^false$/", $x))         { $x = false; }
+
+        return($x);
 
     }
 

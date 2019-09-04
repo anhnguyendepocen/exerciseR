@@ -8,14 +8,15 @@ class ExerciseR {
     public $DbHandler    = NULL;
     public $UserClass    = NULL;
 
-    private $post        = NULL;
-    private $config      = NULL;
-    private $ExerciseHandler = NULL;
+    protected $_post        = NULL;
+    protected $_config      = NULL;
+    protected $_options     = NULL;
+    protected $ExerciseHandler = NULL;
 
     // Use 'true' for admin pages, 'false' for participant pages.
     // Used to check if the current user has enough privileges
     // to see this page.
-    private $admin_page = false;
+    protected $admin_page = false;
 
     /* Setting up ExerciseR object.
      *
@@ -30,11 +31,14 @@ class ExerciseR {
      * config : ConfigParser
      *      object with UI/UX configuration.
      */
-    function __construct($config, $admin_page = false) {
+    function __construct($config, $options = NULL, $admin_page = false) {
 
         // Default time zone handling
         date_default_timezone_set("UTC");
         $this->admin_page = $admin_page;
+
+        // Append options
+        $this->_options     = $options;
 
         // Append ConfigParser object
         $this->config       = $config;
@@ -61,7 +65,7 @@ class ExerciseR {
         $this->ExerciseHandler = new ExerciseHandler($config, $this->DbHandler);
 
         // Store _POST object
-        $this->post = (object)$_POST;
+        $this->_post = (object)$_POST;
 
     }
 
@@ -82,10 +86,24 @@ class ExerciseR {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/exerciseR.css">
+    <link rel="stylesheet" href="css/bootstrap.4.1.2.min.css" />
+    <link rel="stylesheet" href="css/exerciseR.css" />
     <script src="lib/jquery-3.4.1.min.js"></script>
     <script src="lib/bootstrap-4.2.1.min.js"></script>
+    <?php
+    // Adding js scripts
+    if (isset($this->_options["js"])) {
+        foreach($this->_options["js"] as $val) {
+            printf("    <script src=\"%s\"></script>\n", $val);
+        }
+    }
+    // Adding css style files
+    if (isset($this->_options["css"])) {
+        foreach($this->_options["css"] as $val) {
+            printf("    <link rel=\"stylesheet\" href=\"%s\" />\n", $val);
+        }
+    }
+    ?>
 </head>
 <body>
 
@@ -149,19 +167,6 @@ class ExerciseR {
 </html>
         <?php
     }
-
-    /* Show content
-     * If $this->post->exercise is empty, show user exercise
-     * overview.
-     */
-    public function show_content() {
-        if (!property_exists($this->post, "exercise")) {
-            $this->_show_content_overview();
-        } else {
-            $this->_show_exercise($this->post->exercise);
-        }
-    }
-
 
     /* Convert times to string
      * Parameters
@@ -253,7 +258,9 @@ class ExerciseR {
     }
 
 
-    private function _show_content_overview() {
+    /* Show index page (exercise overview)
+     */
+    public function show_index() {
 
         // Loading open and solved exercises
         $open   = $this->ExerciseHandler->open_exercises();
@@ -267,7 +274,7 @@ class ExerciseR {
             $status = $status == "assigned" ? "solve" : $status;
             $btn = sprintf("<button type=\"submit\" class=\"btn %1\$s\">%1\$s</button>\n",
                             $status);
-            $res = "<form name=\"%s\" method=\"POST\">\n"
+            $res = "<form action=\"exercise.php\" name=\"%s\" method=\"POST\">\n"
                   ."  <input type=\"hidden\" name=\"exercise\" value=\"%s\" />\n"
                   ."  %s\n"
                   ."</form>\n";
@@ -292,16 +299,23 @@ class ExerciseR {
         print("</div>\n");
     }
 
-    private function _show_exercise($hash) {
+    public function show_exercise() {
 
+        // No exercise hash (via post)
+        $hash = property_exists($this->_post, "exercise") ? $this->_post->exercise : NULL;
         // Loading exercise ID
-        $sql = "SELECT exercise_id FROM exercise_mapping WHERE hash = \"%s\";";
-        $res = $this->DbHandler->query(sprintf($sql, $hash))->fetch_object();
+        if (!is_null($hash)) {
+            $sql = "SELECT exercise_id FROM exercise_mapping WHERE hash = \"%s\";";
+            $res = $this->DbHandler->query(sprintf($sql, $hash))->fetch_object();
+            if ($res->num_rows != 0) { die("Whoops, problems finding the exercise!"); }
+            $id = $res->exercise_id;
+        } else {
+            $id = NULL;
+        }
 
-        if ($res->num_rows != 0) { die("Whoops, problems finding the exercise!"); }
 
         // Else we have the exercise ID, show exercise
-        $exercise = $this->ExerciseHandler->show_exercise($hash, $res->exercise_id);
+        $exercise = $this->ExerciseHandler->show_exercise($hash, $id);
 
     }
 

@@ -6,15 +6,24 @@ $sucess = false; // Default
 if ($_FILES["file"]["error"] == UPLOAD_ERR_OK) {
     // basename() may prevent filesystem traversal attacks;
     // further validation/sanitation of the filename may be appropriate
-    //$outfile = $_FILES["file"]["value"];
-    $outfile = sprintF("../%s", $_SESSION["upload_file_destination"]);
-    $sucess = move_uploaded_file($_FILES["file"]["tmp_name"], $outfile);
+    //$destination = $_FILES["file"]["value"];
+    $destination = trim($_SESSION["upload_file_destination"]);
+    if (!preg_match("/^\//", $destination)) {
+        # TODO Why ../? Makes not too much sense.
+        $destination = sprintf("../%s", $destination);
+    }
+    $sucess = move_uploaded_file($_FILES["file"]["tmp_name"], $destination);
 }
  
+error_log(sprintf("Uploaded file to: " . $destination));
+
 // $output will be converted into JSON 
 if ($sucess) {
-    $output = array("file" => $_FILES["file"], "success" => true, "message" => "Success!");
-    $output["content"] = file_get_contents($outfile);
+    $output = array("file" => $_FILES["file"],
+                    "destination" => $destination,
+                    "success" => true,
+                    "message" => "Success!");
+    $output["content"] = file_get_contents($destination);
 } else {
     $output = array("success" => false, "error" => "Failure!");
 }
