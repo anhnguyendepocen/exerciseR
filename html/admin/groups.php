@@ -29,53 +29,46 @@ require_once("../php/FileHandler.php");
   <script>
     // http://simpleupload.michaelcbrook.com/
     $(document).ready(function(){
-        $("#admin-table-exercises").admin_table_exercises();
+        $("#admin-table-groups").admin_table_groups();
     });
   </script>
 
-    <div class="container" id="admin-add-users">
+    <div class="container" id="admin-add-group">
 
         <!-- tab navigation -->
         <ul class="nav nav-tabs">
             <li class="nav-item">
-                <a class="nav-link active" data-toggle="tab" href="#tab-exercises">Exercises</a>
+                <a class="nav-link active" data-toggle="tab" href="#tab-groups">Existing Groups</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#tab-single">Add new exercise</a>
+                <a class="nav-link" data-toggle="tab" href="#tab-single">Add New Group</a>
             </li>
         </ul>
         <br />
 
         <!-- tab panes -->
         <div class="tab-content">
-            <!-- existing users -->
-            <div class="tab-pane container active" id="tab-exercises">
-            <h3>Existing Exercises</h3>
-            <div id="admin-table-exercises"></div>
+            <!-- existing groups -->
+            <div class="tab-pane container active" id="tab-groups">
+            <h3>Existing Groups</h3>
+            <div id="admin-table-groups"></div>
             </div>
             <!-- single user, defined via form -->
             <div class="tab-pane container" id="tab-single">
-                <h3>Add single user</h3>
+                <h3>Add new group</h3>
                 <form class="form-horizontal">
                   <div class="form-group">
-                    <label class="control-label col-sm-4" for="form-username">Username:</label>
+                    <label class="control-label col-sm-4" for="form-groupname">Groupname:</label>
                     <div class="col-sm-8">
-                      <input type="text" class="form-control" name="username" maxlength="20"
-                             id="form-username" placeholder="Enter username">
+                      <input type="text" class="form-control" name="groupname" maxlength="20"
+                             id="form-groupname" placeholder="Enter groupname">
                     </div>
                   </div>
                   <div class="form-group">
-                    <label class="control-label col-sm-4" for="form-displayname">Displayname:</label>
+                    <label class="control-label col-sm-4" for="form-description">Description:</label>
                     <div class="col-sm-8">
-                      <input type="text" class="form-control" name="displayname" maxlength="50"
-                             id="form-displayname" placeholder="Enter displayname">
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="control-label col-sm-4" for="form-email">E-Mail address:</label>
-                    <div class="col-sm-8">
-                      <input type="email" class="form-control" name="email"
-                             id="form-email" placeholder="Enter email">
+                      <input type="text" class="form-control" name="description" maxlength="100"
+                             id="form-description" placeholder="Enter description">
                     </div>
                   </div>
                   <div class="form-group">

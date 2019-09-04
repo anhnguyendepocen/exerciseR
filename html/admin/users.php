@@ -13,7 +13,10 @@ $config = new ConfigParser("../../files/config.ini", "..");
 
 # Loading the exercise class
 $HandlerOptions = array("js"=>array("../lib/exr_admin.js",
-                                    "../lib/simpleUpload-1.1.js"));
+                                    "../lib/simpleUpload-1.1.js",
+                                    "../lib/datatables.1.10.18.min.js"),
+                        "css"=>array("../css/datatables.1.10.18.min.css"));
+
 $Handler = new AdmineR($config, $HandlerOptions, true);
 $Handler->site_show_header();
 
@@ -31,12 +34,11 @@ require_once("../php/FileHandler.php");
   </script>
 
     <div class="container" id="admin-add-users">
-        <h3>Add New User(s)</h3>
 
         <!-- tab navigation -->
         <ul class="nav nav-tabs">
             <li class="nav-item">
-                <a class="nav-link active" data-toggle="tab" href="#tab-users">Users</a>
+                <a class="nav-link active" data-toggle="tab" href="#tab-users">Existing Users</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" data-toggle="tab" href="#tab-single">Add new user</a>
@@ -56,7 +58,7 @@ require_once("../php/FileHandler.php");
             </div>
             <!-- single user, defined via form -->
             <div class="tab-pane container" id="tab-single">
-                <p>Add single user</p>
+                <h3>Add single user</h3>
                 <form class="form-horizontal">
                   <div class="form-group">
                     <label class="control-label col-sm-4" for="form-username">Username:</label>
@@ -93,6 +95,7 @@ require_once("../php/FileHandler.php");
             </div>
             <!-- bulk upload, xml upload -->
             <div class="tab-pane container" id="tab-bulk">
+                <h3>Add multiple users</h3>
                 <?php
                 // Used by 'upload.php' (simpleUpload js): where to store
                 // the uploaded file.

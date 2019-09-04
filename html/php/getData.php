@@ -18,10 +18,6 @@ $LoginHandler = new LoginHandler($DbHandler);
 $post = (object)$_POST;
 if (empty($_POST)) { $post->what = "empty"; }
 
-/////testing////$post = (object)$_REQUEST;
-/////testing////if (empty($_REQUEST)) { $post->what = "empty"; }
-if (!property_exists($post, "limit")) { $post->limit = 10; }
-
 # Default return value (will be re-defined below)
 $rval = array("error" => sprintf("Don't know what to do with \"%s\".", $post->what));
 
@@ -31,8 +27,9 @@ switch($post->what) {
     // --------------------------------
     case "users":
 
+        $limit = property_exists($post, "limit") ? sprintf(" LIMIT %d", $post->limit) : "";
         $res = $DbHandler->query("SELECT user_id, username, status, created FROM users "
-                                ." ORDER BY created DESC LIMIT " . sprintf("%d", $post->limit));
+                                ." ORDER BY created DESC" . $limit);
         if ($res) {
             $rval = array();
             while($tmp = $res->fetch_object()) { array_push($rval, $tmp); }
@@ -43,6 +40,7 @@ switch($post->what) {
     // --------------------------------
     case "exercises":
 
+        $limit = property_exists($post, "limit") ? sprintf(" LIMIT %d", $post->limit) : "";
         $sql = "SELECT e.*, u.username AS created_by, "
             ."CASE WHEN ea.count IS NULL THEN 0 ELSE ea.count END AS count_assigned, "
             ."CASE WHEN er.count IS NULL THEN 0 ELSE er.count END AS count_retry, "
@@ -58,7 +56,7 @@ switch($post->what) {
             ."WHERE status = 'solved' GROUP BY exercise_id) AS es ON es.exercise_id = e.exercise_id "
             ."LEFT JOIN (SELECT exercise_id, count(*) AS count FROM exercise_mapping "
             ."WHERE status = 'closed' GROUP BY exercise_id) AS ec ON ec.exercise_id = e.exercise_id "
-            ."ORDER BY u.created DESC LIMIT " . sprintf("%d", $post->limit);
+            ."ORDER BY u.created DESC " . $limit;
         $res = $DbHandler->query($sql);
         if ($res) {
             $rval = array();
@@ -69,8 +67,8 @@ switch($post->what) {
     // --------------------------------
     case "groups":
 
-        $res = $DbHandler->query("SELECT * FROM groups ORDER BY groupname "
-                                ."LIMIT " . sprintf("%d", $post->limit));
+        $limit = property_exists($post, "limit") ? sprintf(" LIMIT %d", $post->limit) : "";
+        $res = $DbHandler->query("SELECT * FROM groups ORDER BY groupname " . $limit);
         if ($res) {
             $rval = array();
             while($tmp = $res->fetch_object()) { array_push($rval, $tmp); }

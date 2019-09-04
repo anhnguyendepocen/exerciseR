@@ -70,11 +70,11 @@ class AdmineR extends ExerciseR {
         <script>
         $(document).ready(function() {
             // Setting up groups table
-            $("#admin-table-groups").admin_table_groups();
+            $("#admin-table-groups").admin_table_groups(5);
             // Setting up user table
-            $("#admin-table-exercises").admin_table_exercises();
+            $("#admin-table-exercises").admin_table_exercises(10);
             // Setting up user table
-            $("#admin-table-users").admin_table_users();
+            $("#admin-table-users").admin_table_users(10);
         });
         </script>
 

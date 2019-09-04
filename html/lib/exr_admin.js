@@ -37,7 +37,7 @@ $.fn.admin_getData = function(data, elem, callback) {
 // --------------------------------------------
 // Setting up groups table
 // --------------------------------------------
-$.fn.admin_table_groups = function() {
+$.fn.admin_table_groups = function(limit = null) {
     // Callback function, called by 'admin_getData'.
     callback = function(data, elem) {
         // Create table
@@ -61,14 +61,18 @@ $.fn.admin_table_groups = function() {
             $(tr).append("<td class=\"description\">" + val.description + "</td>")
             $(tr).append("<td class=\"created\">" + val.created + "</td>")
         });
+        $("#admin-table-groups > table").DataTable();
     }
-    $.fn.admin_getData({what: "groups"}, $(this), callback)
+    // Calling getData
+    args = {what: "groups"}
+    if (limit != null) { args.limit = limit }
+    $.fn.admin_getData(args, $(this), callback)
 }
 
 // --------------------------------------------
 // Setting up users table
 // --------------------------------------------
-$.fn.admin_table_users = function(data) {
+$.fn.admin_table_users = function(limit = null) {
     // Callback function, called by 'admin_getData'.
     callback = function(data, elem) {
         $(elem).html("<table class=\"table\"><thead><tr></thead></tr>"
@@ -92,15 +96,20 @@ $.fn.admin_table_users = function(data) {
             $(tr).append("<td><a href=\"../php/loginAs.php?user_id="
                         + val.user_id + "\" target=\"_self\">Login as</a>");
         });
+        $("#admin-table-users > table").DataTable();
     }
-    $.fn.admin_getData({what: "users"}, $(this), callback)
+    // Calling getData
+    args = {what: "users"}
+    if (limit != null) { args.limit = limit }
+    $.fn.admin_getData(args, $(this), callback)
+
 }
 
 
 // --------------------------------------------
 // Setting up exercise table
 // --------------------------------------------
-$.fn.admin_table_exercises = function(data) {
+$.fn.admin_table_exercises = function(limit = null) {
     // Callback function, called by 'admin_getData'.
     callback = function(data, elem) {
         $(elem).html("<table class=\"table\"><thead><tr></thead></tr>"
@@ -128,8 +137,12 @@ $.fn.admin_table_exercises = function(data) {
                     val.created_by + ", " + val.created + "<span></td>")
             $(tr).append("<td class=\"description\">" + val.description + "</td>")
         });
+        $("#admin-table-exercises > table").DataTable();
     }
-    $.fn.admin_getData({what: "exercises"}, $(this), callback)
+    // Calling getData
+    args = {what: "exercises"}
+    if (limit != null) { args.limit = limit }
+    $.fn.admin_getData(args, $(this), callback)
 }
 
 
@@ -247,8 +260,149 @@ $.fn.addUser_show_result = function(elem, data) {
 } // End of $.fn.addUsers_show_result
 
 
+/* Processing the return of addGroup.php
+ *
+ * Parameters
+ * ==========
+ * elem : html object
+ *      html element, where to add the output.
+ * data : object
+ *      object returned on success by addGroup.php (ajax call)
+ */
+$.fn.addGroup_show_result = function(elem, data) {
+
+    // ----------------------------
+    // No errors
+    // ----------------------------
+    if (data.error == undefined) {
+        $(elem).attr("class", "alert alert-success")
+               .html("<p>Group-check ok</p>")
+        $(elem).append("<form>" +
+                       "<button type=\"button\" class=\"btn btn-primary\" " +
+                       "id=\"admin-addgroup-now\" name=\"submit\">Create new group now</button>" +
+                       "</form>")
+        // Append table
+        $(elem).append("<div class=\"table\"><table class=\"table\" /></div>");
+        $(elem).find("table:first-child").append("<thead /><tbody />")
+        // Adding content to table
+        var head = $(elem).find("table:first-child > thead")
+        var body = $(elem).find("table:first-child > tbody")
+        $(head).append("<tr />")
+        $(head).find("tr").append("<th>groupname</th>")
+                          .append("<th>description</th>")
+
+        // Only one entry
+        if (data.error == undefined) {
+            data.error = ""; css_class = ""
+        } else {
+           css_class = "class=\"alert-danger\""
+        }
+        // Add new row to table
+        $(body).append("<tr " + css_class + " />")
+        var tr = $(body).find("tr:last-child")
+        $(tr).append("<td class=\"groupname\">" + data.groupname + "</td>")
+             .append("<td class=\"description\">" + data.description + "</td>")
+             .append("<td class=\"email\">" + data.email + "</td>")
+        
+
+        // Add functionality
+        $("#admin-addgroup-now").on("click", function() {
+            $.ajax("../php/addGroup.php", {
+                data: {group: data},
+                method: "POST",
+                dataType: "JSON",
+                success: function(data) {
+                    if (data.error != undefined & data.groupname == undefined) {
+                        css_class = "alert-danger";
+                        message = data.error
+                    } if (data.success != undefined) {
+                        css_class = "alert-success";
+                        message = data.success
+                    } else {
+                        css_class = "alert-danger";
+                        message = "Got an unexpected return. Group added? Maybe!"
+                    }
+                    var elem = $("#admin-addgroup-now").closest("div")
+                    $(elem).attr("class", "alert " + css_class).html(message)
+                    $.each($("#admin-add-group form input"), function(key, input) {
+                        $(input).val("")
+                    });
+                    // Update "existing user" table
+                    $("#admin-table-groups").admin_table_groups();
+                }, error: function() {
+                    alert("Whoops, something went wrong.")
+                }
+            });
+        });
+
+    // ----------------------------
+    // Some errors occurred
+    // ----------------------------
+    } else {
+        $(elem).attr("class", "alert alert-warning")
+               .html("<p>Group-check returned errors. Fix errors and try again.</p>")
+        // Append table
+        $(elem).append("<div class=\"table\"><table class=\"table\" /></div>");
+        $(elem).find("table:first-child").append("<thead /><tbody />")
+        // Adding content to table
+        var head = $(elem).find("table:first-child > thead")
+        var body = $(elem).find("table:first-child > tbody")
+        $(head).append("<tr />")
+        $(head).find("tr").append("<th>group</th>")
+                          .append("<th>error</th>")
+
+        // Add new row to table
+        $(body).append("<tr class=\"alert-danger\" />")
+        var tr = $(body).find("tr:last-child")
+        $(tr).append("<td><b>" + data.groupname + "</b>: " +
+                    data.description + "</td>")
+             .append("<td class=\"error\">" + data.error + "</td>")
+    }
+} // End of $.fn.addUsers_show_result
+
 // XML file upload when adding users
 $(document).ready(function(){
+
+    /* Functionality for "add new group"
+     *
+     * Adds the functionality to the form for "add new group"
+     */
+    $("#admin-add-group").on("click", "button.submit", function() {
+        var form = $(this).closest("form")
+        // Prevent default form submit
+        $(form).submit(function(e) { return false; });
+        
+        // Loading form values.
+        var groupname = $(form).find("input[name='groupname']").val()
+        var description = $(form).find("input[name='description']").val()
+
+        // Same limits as in the xml scheme addUsers.xsd
+        if (groupname.length < 4 | groupname.length > 20) {
+            alert("Group name must be 4 up to 50 characters long.")
+        } else if (description.length < 5 | description.length > 50) {
+            alert("Description must be 5 up to 300 characters long.")
+        } else {
+            // Element to show output/messages
+            var elem = $(this).closest(".container").find(".admin-message > div")
+            // If successfully uploaded: check "addUsers".
+            $.ajax("../php/addGroup.php", {
+                   data: {groupname: groupname, description: description},
+                   method: "POST",
+                   dataType: "JSON",
+                   success: function(data) {
+                       // Ups, error message
+                       if (data.error != undefined & data.groupname == undefined) {
+                           $(elem).attr("class", "alert alert-danger").html(data.error);
+                       // Success message, add form to 'accept'
+                       } else {
+                           $.fn.addGroup_show_result(elem, data);
+                       }
+                   }, error: function() {
+                       alert("Ups, something went wrong.")
+                   }
+            });
+        }
+    });
 
     /* Functionality for "add single user".
      *
@@ -263,7 +417,6 @@ $(document).ready(function(){
         var username = $(form).find("input[name='username']").val()
         var displayname = $(form).find("input[name='displayname']").val()
         var email = $(form).find("input[name='email']").val()
-        console.log(username.length)
 
         // Helper function to check mail address.
         function isEmail(email) {
@@ -279,7 +432,7 @@ $(document).ready(function(){
             alert("Invalid email address.")
         } else {
             // Element to show output/messages
-            var elem = $(this).closest(".container").find(".admin-message")
+            var elem = $(this).closest(".container").find(".admin-message > div")
             // If successfully uploaded: check "addUsers".
             $.ajax("../php/addUsers.php", {
                    data: {username: username, displayname: displayname, email: email},

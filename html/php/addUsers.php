@@ -64,14 +64,8 @@ if (!$UserClass->is_admin()) { $LoginHandler->access_denied("Admin permissions r
 $post = (object)$_POST;
 if (empty($_POST)) { $post->what = "empty"; }
 
-error_log("Warning, _REQUEST (testing) should be _POST in addUsers");
-$post = (object)$_REQUEST;
-if (empty($_REQUEST)) { $post->what = "empty"; }
-if (!property_exists($post, "limit")) { $post->limit = 10; }
-
 // Default return value (will be re-defined below)
 $rval = array("error" => "Hoppala, something went wrong.");
-
 
 function parse_xml_file($file, $xsd = "addUsers.xsd") {
     // Wrong input
