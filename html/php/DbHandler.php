@@ -24,7 +24,9 @@ class DbHandler extends mysqli {
         $this->_check_table($this->config->get("mysql", "database"), "users");
         $this->_check_table($this->config->get("mysql", "database"), "groups");
         $this->_check_table($this->config->get("mysql", "database"), "users_role");
+        $this->_check_table($this->config->get("mysql", "database"), "users_groups");
         $this->_check_table($this->config->get("mysql", "database"), "exercises");
+        $this->_check_table($this->config->get("mysql", "database"), "public_exercises");
         $this->_check_table($this->config->get("mysql", "database"), "exercise_mapping");
     }
 
@@ -121,7 +123,7 @@ class DbHandler extends mysqli {
             $this->query("INSERT INTO groups (groupname, description) VALUES "
                         ."('test', 'test class');");
 
-        // User role, using ENUM (TEXT in sqlite3)
+        // User roles
         } else if ($table == "users_role") {
             $sql = "CREATE TABLE users_role (\n"
                   ."  user_id MEDIUMINT UNSIGNED NOT NULL,\n"
@@ -148,6 +150,24 @@ class DbHandler extends mysqli {
             $uid = $uid->fetch_object()->user_id;
             $this->query("INSERT INTO users_role (user_id, role) VALUES (".$uid.", 'participant');");
 
+        // User group memberships
+        } else if ($table == "users_groups") {
+            $sql = "CREATE TABLE users_groups (\n"
+                  ."  user_id MEDIUMINT UNSIGNED NOT NULL,\n"
+                  ."  group_id MEDIUMINT UNSIGNED NOT NULL,\n"
+                  ."  added  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
+                  ."  UNIQUE (user_id, group_id)\n"
+                  .")";
+
+            // Create table
+            if(!$this->query($sql)) { throw new Exception(sprintf("Table creation failed "
+                ." (%s; %d): %s", $table, $this->connect_errno, $this->connect_error)); }
+
+            $this->query("INSERT INTO users_groups (group_id, user_id) VALUES (1, 1);");
+            $this->query("INSERT INTO users_groups (group_id, user_id) VALUES (2, 1);");
+            $this->query("INSERT INTO users_groups (group_id, user_id) VALUES (2, 2);");
+            $this->query("INSERT INTO users_groups (group_id, user_id) VALUES (3, 2);");
+
         // Create table which takes up the exercises
         } else if ($table == "exercises") {
             $sql = "CREATE TABLE exercises (\n"
@@ -171,6 +191,28 @@ class DbHandler extends mysqli {
                         ."VALUES ('Arithmetic mean with for loop', 'This is just a demo entry', 1);");
             $this->query("INSERT INTO exercises (name, description, user_id) "
                         ."VALUES ('Find index in character vector', 'Just some demo entry', 1);");
+
+        // Create table which takes up the exercises
+        } else if ($table == "public_exercises") {
+            $sql = "CREATE TABLE public_exercises (\n"
+                  ."  exercise_id MEDIUMINT NOT NULL AUTO_INCREMENT,\n"
+                  ."  identifier  VARCHAR(30) NOT NULL,\n"
+                  ."  created     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
+                  ."  status  ENUM('active', 'inactive') DEFAULT 'active',\n"
+                  ."  UNIQUE (exercise_id, identifier)\n"
+                  .")";
+
+            // Create table
+            if(!$this->query($sql)) { throw new Exception(sprintf("Table creation failed "
+                ." (%s; %d): %s", $table, $this->connect_errno, $this->connect_error)); }
+
+            ## TODO insert demo data
+            $this->query("INSERT INTO public_exercises (exercise_id, identifier) "
+                        ."VALUES (1, 'S2020');");
+            $this->query("INSERT INTO public_exercises (exercise_id, identifier) "
+                        ."VALUES (1, 'W2019');");
+            $this->query("INSERT INTO public_exercises (exercise_id, identifier) "
+                        ."VALUES (2, 'S2020');");
 
         // Create mapping table: attribute a specific exercise
         // to a user

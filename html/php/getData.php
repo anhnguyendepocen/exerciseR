@@ -15,8 +15,9 @@ $LoginHandler = new LoginHandler($DbHandler);
 
 # Convert _POST to object.
 # TODO: WARNING: needs to be POST!
-$post = (object)$_POST;
-if (empty($_POST)) { $post->what = "empty"; }
+error_log("WARNING: in getData: REQUEST is used for development purposes, should be _GET.");
+$post = (object)$_REQUEST; ##$_POST;
+if (empty($post)) { $post->what = "empty"; }
 
 # Default return value (will be re-defined below)
 $rval = array("error" => sprintf("Don't know what to do with \"%s\".", $post->what));
@@ -27,13 +28,35 @@ switch($post->what) {
     // --------------------------------
     case "users":
 
+        $prep_group = $DbHandler->prepare("SELECT g.group_id, g.groupname FROM users_groups AS ug "
+                                         ."LEFT JOIN groups AS g ON ug.group_id = g.group_id "
+                                         ."WHERE ug.user_id = ?");
+
+        if (!$prep_group) { die("Problems preparing the query."); }
+        $prep_group->bind_param("i", $uid);
+
         $limit = property_exists($post, "limit") ? sprintf(" LIMIT %d", $post->limit) : "";
         $res = $DbHandler->query("SELECT user_id, username, status, created FROM users "
                                 ." ORDER BY created DESC" . $limit);
+
+        $DbHandler->query("START TRANSACTION");
         if ($res) {
             $rval = array();
-            while($tmp = $res->fetch_object()) { array_push($rval, $tmp); }
+            while($tmp = $res->fetch_object()) {
+                $uid = $tmp->user_id;
+                // Find group memberships (name of groups)
+                $prep_group->execute();
+                $tmp_groups = array();
+                if ($prep_group->bind_result($group_id, $groupname)) {
+                    while ($prep_group->fetch()) {
+                        array_push($tmp_groups, array("id"=>$group_id, "name"=>$groupname));
+                    }
+                }
+                if (count($tmp_groups) > 0) { $tmp->groups = $tmp_groups; }
+                array_push($rval, $tmp);
+            }
         }
+        $prep_group->close();
         break;
 
 

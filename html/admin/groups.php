@@ -35,6 +35,8 @@ require_once("../php/FileHandler.php");
 
     <div class="container" id="admin-add-group">
 
+        <h3 style="padding-bottom: 1em;">Administrate Groups</h3>
+
         <!-- tab navigation -->
         <ul class="nav nav-tabs">
             <li class="nav-item">
@@ -50,12 +52,12 @@ require_once("../php/FileHandler.php");
         <div class="tab-content">
             <!-- existing groups -->
             <div class="tab-pane container active" id="tab-groups">
-            <h3>Existing Groups</h3>
-            <div id="admin-table-groups"></div>
+                <p><b>Existing Groups</b></p>
+                <div id="admin-table-groups"></div>
             </div>
             <!-- single user, defined via form -->
             <div class="tab-pane container" id="tab-single">
-                <h3>Add new group</h3>
+                <p><b>Add new group</b></p>
                 <form class="form-horizontal">
                   <div class="form-group">
                     <label class="control-label col-sm-4" for="form-groupname">Groupname:</label>

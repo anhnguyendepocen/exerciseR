@@ -45,7 +45,19 @@ class AdmineR extends ExerciseR {
         <img id="exerciserlogo" src="../css/logo.svg"></img>
         <ul class="navbar-nav">
             <li class="nav-item">
+                <a class="nav-link text-light" href="../index.php">UI</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-light" href="index.php">home</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link text-light" href="users.php">users</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-light" href="groups.php">groups</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-light" href="exercises.php">exercises</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link text-light" href="../">back</a>
@@ -62,54 +74,6 @@ class AdmineR extends ExerciseR {
         <?php
     }
 
-    /* Show Admin Index Page */
-    public function show_admin_index() {
-
-        // Open bootstrap container
-        ?> 
-        <script>
-        $(document).ready(function() {
-            // Setting up groups table
-            $("#admin-table-groups").admin_table_groups(5);
-            // Setting up user table
-            $("#admin-table-exercises").admin_table_exercises(10);
-            // Setting up user table
-            $("#admin-table-users").admin_table_users(10);
-        });
-        </script>
-
-        <div class="container">
-            <h3>Groups</h3>
-            <div class="table-responsive" id="admin-table-groups"></div>
-            
-            <h3>Exercises</h3>
-            <div class="table-responsive" id="admin-table-exercises"></div>
-
-            <h3>Users</h3>
-            <div class="table-responsive" id="admin-table-users"></div>
-        </div>
-        <?php
-
-    }
-
-    public function show_admin_exercises() {
-
-        // Open bootstrap container
-        ?> 
-        <script>
-        $(document).ready(function() {
-            var groups = $.fn.getData({what: "groups", limit: 10});
-            console.log(groups)
-        });
-        </script>
-        <div class="container">
-        Exercises ...
-
-        <div id="admin-exercises"></div>
-        </div>
-        <?php
-
-    }
 
 
 }

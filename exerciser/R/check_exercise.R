@@ -65,14 +65,14 @@ check_exercise <- function(dir, exercise_id, user_id, exercise_hash) {
     check_and_copy_files(doc, path$exercise, getwd())
 
     # Development purposes, added to log file
-    cat("----------------- begin main.R -----------------\n")
-    cat(writeLines(readLines(sprintf("%s/main.R", path$user)), sep = "\n"))
-    cat("------------------ end main.R ------------------\n")
+    cat("----------------- begin solution.R -----------------\n")
+    cat(writeLines(readLines(sprintf("%s/solution.R", path$user)), sep = "\n"))
+    cat("------------------ end solution.R ------------------\n")
 
     # What we do now: combine the user script with our test script
     # and source this file.
     tmp <- c("#' # Your submission",
-             readLines(sprintf("%s/main.R", path$user)),
+             readLines(sprintf("%s/solution.R", path$user)),
              "#' # ExerciseR Tests",
              readLines(sprintf("%s/exercise_tests.R", path$exercise)))
     tempfile <- basename(tempfile(fileext = ".R"))

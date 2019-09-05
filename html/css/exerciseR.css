@@ -111,6 +111,18 @@ table.table tbody tr span.exercise.retry    { color: #FFCC33; }
 table.table tbody tr span.exercise.solved   { color: #28a745; }
 table.table tbody tr span.exercise.closed   { color: #808080; }
 
+/* Login-as buttons */
+a.loginas {
+    display: inline;
+    margin: .2em 0;
+    padding: 0;
+    margin: 0 .5em 0 0; 
+    padding: 0 .7em;
+    background-image: url("../css/icon_loginas.svg");
+    background-position: center middle;
+    background-repeat: no-repeat;
+}
+
 
 
 

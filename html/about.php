@@ -13,7 +13,7 @@ function __autoload($name) {
 $config = new ConfigParser("../files/config.ini");
 
 # Loading the exercise class
-$Handler = new ExerciseR($config);
+$Handler = new ExerciseR($config, true);
 $Handler->site_show_header();
 ?>
 

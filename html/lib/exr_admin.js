@@ -80,8 +80,7 @@ $.fn.admin_table_users = function(limit = null) {
         $(elem).find("> table > thead > tr")
             .append("<th class=\"ID center\">ID</th>")
             .append("<th class=\"name\">Name</th>")
-            .append("<th class=\"created center\">Created</th>")
-            .append("<th>&nbsp;</th>")
+            .append("<th class=\"groups\">Groups</th>")
         // Adding data
         var target = $(elem).find("tbody")
         $.each(data, function(key, val) {
@@ -90,11 +89,21 @@ $.fn.admin_table_users = function(limit = null) {
             var tr = $(target).find("tr").last()
             $(tr).addClass(val.status);
             // Adding table cells
-            $(tr).append("<td class=\"ID\">" + val.user_id + "</td>")
-            $(tr).append("<td class=\"name\">" + val.username + "</td>")
-            $(tr).append("<td class=\"created center\">" + val.created + "</td>")
-            $(tr).append("<td><a href=\"../php/loginAs.php?user_id="
-                        + val.user_id + "\" target=\"_self\">Login as</a>");
+            $(tr).append("<td class=\"ID center\">" + val.user_id + "</td>")
+            $(tr).append("<td class=\"name\">" + 
+                         "<a class=\"btn btn-primary loginas\" href=\"../php/loginAs.php?user_id=" +
+                         val.user_id + "\" target=\"_self\" " +
+                         "data-toggle=\"tooltip\" title=\"Login as " + val.username + "\"></a>" +
+                         val.username + "<br/>" +
+                         "<span class=\"meta\">" + val.created + "</td>")
+            if (val.groups == undefined) {
+                $(tr).append("<td class=\"groups text-secondary\">no group membership</td>")
+            } else {
+                var tmp = []
+                $.each(val.groups, function(k,v) { tmp.push("#" + v.name); });
+                console.log(tmp)
+                $(tr).append("<td class=\"groups\">" + tmp.join(", ") + "</td>");
+            }
         });
         $("#admin-table-users > table").DataTable();
     }

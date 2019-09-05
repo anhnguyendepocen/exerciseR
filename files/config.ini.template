@@ -21,6 +21,7 @@ sender_name = [ExerciseR] Reto Stauffer
 files       = ../files
 uploads     = ../files/uploads
 exercises   = ../files/exercises
+public      = ../files/public
 
 [permissions]
 # The UI/UX php creates folders if not existing

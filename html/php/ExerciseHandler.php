@@ -8,7 +8,7 @@
 # -------------------------------------------------------------------
 # - EDITORIAL:   2019-04-19, RS: Created file on thinkreto.
 # -------------------------------------------------------------------
-# - L@ST MODIFIED: 2019-08-26 19:01 on marvin
+# - L@ST MODIFIED: 2019-09-05 17:51 on marvin
 # -------------------------------------------------------------------
 
 
@@ -19,9 +19,17 @@ class ExerciseHandler {
     private $db = NULL;
     private $config = NULL;
 
+    public $_post;
+    public $_get;
+
     function __construct($config, $db) {
         $this->config = $config;
         $this->db     = $db;
+
+        // Store _POST object
+        $this->_post = (object)$_POST;
+        // Get argument(s): used for public exercise URL's
+        $this->_get  = (object)$_GET;
 
     }
 
@@ -93,6 +101,30 @@ class ExerciseHandler {
         return($this->_load_open_solved_exercises($user_id, array("solved", "closed")));
     }
 
+    /* Loading open public exercises.
+     * 
+     * Parameters
+     * ==========
+     *
+     * Returns
+     * =======
+     * Returns a stdClass object containing the exercises.
+     */
+    public function public_exercises($user_id = NULL) {
+
+        $sql = "SELECT * FROM public_exercises AS p LEFT JOIN exercises AS e "
+              ."ON p.exercise_id = e.exercise_id";
+        // Open exercises
+        $query = $this->db->query($sql);
+
+        // Create object
+        $res = array();
+        while($row = $query->fetch_object()) {
+            $row->identifier = sprintf("%s-%d", $row->identifier, $row->exercise_id);
+            array_push($res, $row);
+        }
+        return(count($res) == 0 ? NULL : (object)$res);
+    }
 
     private function _load_exercise_xml($file) {
         if (!is_file($file)) {
@@ -146,15 +178,16 @@ class ExerciseHandler {
      *      has been assigned, and the user id. Used for the user uploads.
      * exercise_id : int
      *      ID of the exercise.
+     * exercise_status : str
+     *      Status of the exercise as stored in the database (exercise_mapping.status).
      *
      * Returns
      * =======
      * No return, just creates UI.
      */
-    public function show_exercise($hash, $exercise_id) {
+    public function show_exercise($hash, $exercise_id, $exercise_status) {
 
         if (is_null($hash) | is_null($exercise_id)) {
-            var_dump($hash); var_dump($exercise_id);
             ?>
             <h3>Sorry!</h3>
             <p>
@@ -165,6 +198,19 @@ class ExerciseHandler {
             If the problem remains, this might be
             an issue with the ExerciseR. In this case, try to contact your
             administrator.
+            </p>
+            <?php
+            return;
+        } else if (strcmp($exercise_status, "closed") == 0) {
+            ?>
+            <h3>Exercise Closed</h3>
+            <p>
+            This exercise has been closed by the administrator, either
+            due to a time constraint or manually.
+            </p>
+            <p>
+            Go back to "<a href="index.php" target="_self">exercises</a>"
+            and select one of the not-yet-closed exercises to proceed.
             </p>
             <?php
             return;
@@ -179,12 +225,30 @@ class ExerciseHandler {
 
         # Check if files exist. If not, stop
         foreach($files as $key=>$val) {
-            if (!is_file($val)) { die(sprintf("Cannot find file \"%s\".", $value)); }
+            if (!is_file($val)) {
+                ?>
+                <h3>Ups, an error occurred</h3>
+                <p>
+                Cannot find file "<b><?php print(basename($val)); ?></b>" 
+                for exercise "<b><?php print($exercise_id); ?></b>" on disc.
+                Please contact the webmaster
+                (<a href="mailto:<?php print($this->config->get("system", "webmaster")); ?>"><?php print($this->config->get("system", "webmaster")); ?></a>).
+                </p>
+                <?php
+                return;
+            }
         }
 
         // User directory. If not existing, create.
-        $userdir  = sprintf("%s/user-%d/%s", $this->config->get("path", "uploads"),
-                            $_SESSION["loggedin_as"], $hash);
+        // In case the user runs a public exercise
+        if (property_exists($this->_get, "public")) {
+            $userdir = sprintf("%s/%s-%s", $this->config->get("path", "public"),
+                               $_SESSION["sessionhash"], $this->_get->public);
+        // Else (registered and logged-in users)
+        } else {
+            $userdir = sprintf("%s/user-%d/%s", $this->config->get("path", "uploads"),
+                               $_SESSION["loggedin_as"], $hash);
+        }
 
         // Creates user upload directory and adds correct
         // permissions/group ownership if defined in the config file.
@@ -256,12 +320,13 @@ class ExerciseHandler {
 
         <?php
         # Expecting the script here:
-        $file    = sprintf("%s/main.R", $userdir);
+        $file    = sprintf("%s/solution.R", $userdir);
 
         # Store destination (used in upload.php)
         $_SESSION["exercise_hash"]           = $hash;
         $_SESSION["exercise_id"]             = $exercise_id;
         $_SESSION["upload_file_destination"] = $file;
+        $_SESSION["upload_store_copy"]       = true;
         if (file_exists($file)) {
             $script = file_get_contents($file);
             $btn_run_class = "btn-success";

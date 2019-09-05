@@ -2,9 +2,10 @@
 
 class UserClass {
 
-
     private $DbHandler = NULL;
     private $roles     = NULL;
+    private $user_id   = NULL;
+    private $groups    = NULL;
 
     /* Handling user details.
      * 
@@ -17,17 +18,20 @@ class UserClass {
      */
     function __construct($user_id, $DbHandler) {
 
-        if (!$DbHandler instanceof DbHandler) {
-            throw new Exception("Wrong input (not an object of class DbHandler)");
+        // If both are NULL we are initializing a "public user"
+        // without userid and no database handler.
+        if (!is_null($user_id) | !is_null($DbHandler)) {
+            if (!$DbHandler instanceof DbHandler) {
+                throw new Exception("Wrong input (not an object of class DbHandler)");
+            }
+
+            $this->user_id   = (int)$user_id;
+            $this->DbHandler = $DbHandler;
+
         }
 
-        $this->user_id   = $user_id;
-        $this->DbHandler = $DbHandler;
-
         // Load roles
-        $this->roles = $this->_get_roles($user_id);
-
-
+        $this->roles = $this->_get_roles();
     }
 
     /* Return user_id
@@ -36,7 +40,7 @@ class UserClass {
      * =======
      * Returns the user_id, integer.
      */
-    public function user_id() { return((int)$this->user_id); }
+    public function user_id() { return($this->user_id); }
 
     /* return username
      * 
@@ -45,9 +49,13 @@ class UserClass {
      * Returns the user name (string).
      */
     public function username() {
-        $res = $this->DbHandler->query(sprintf("SELECT username FROM users WHERE user_id = %d", 
-                                               $this->user_id));
-        return($res->fetch_object()->username);
+        if (is_null($this->user_id) & is_null($this->DbHandler)) {
+            return("public user");
+        } else {
+            $res = $this->DbHandler->query(sprintf("SELECT username FROM users WHERE user_id = %d", 
+                                                   $this->user_id));
+            return($res->fetch_object()->username);
+        }
     }
 
 
@@ -60,6 +68,12 @@ class UserClass {
      */
     private function _get_roles() {
 
+        // Public user
+        if (is_null($this->user_id) & is_null($this->DbHandler)) {
+            return(array("public_user"));
+        }
+
+        // Else load groups from database
         $res = $this->DbHandler->query(sprintf("SELECT role FROM users_role WHERE user_id = %d;",
                                        $this->user_id));
         $roles = array();

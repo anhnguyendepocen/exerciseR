@@ -17,15 +17,15 @@ $config = new ConfigParser("../files/config.ini");
 // and the style sheets needed.
 $HandlerOptions = NULL;
 // Loading the exercise class
-$Handler = new ExerciseR($config, $HandlerOptions);
+$Handler = new ExerciseR($config, true, $HandlerOptions);
 $Handler->site_show_header();
 ?>
 
-  <!-- CodeMirror -->
-  <script>
-    $(document).ready(function(){
-    });
-  </script>
+    <!-- CodeMirror -->
+    <script>
+      $(document).ready(function(){
+      });
+    </script>
 
 <?php $Handler->show_index(); ?>
 

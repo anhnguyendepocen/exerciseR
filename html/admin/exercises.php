@@ -35,6 +35,8 @@ require_once("../php/FileHandler.php");
 
     <div class="container" id="admin-add-users">
 
+        <h3 style="padding-bottom: 1em;">Administrate Exercises</h3>
+
         <!-- tab navigation -->
         <ul class="nav nav-tabs">
             <li class="nav-item">
@@ -50,12 +52,12 @@ require_once("../php/FileHandler.php");
         <div class="tab-content">
             <!-- existing users -->
             <div class="tab-pane container active" id="tab-exercises">
-            <h3>Existing Exercises</h3>
-            <div id="admin-table-exercises"></div>
+                <p><b>Existing Exercises</b></p>
+                <div id="admin-table-exercises"></div>
             </div>
             <!-- single user, defined via form -->
             <div class="tab-pane container" id="tab-single">
-                <h3>Add single user</h3>
+                <p><b>Add single user</b></p>
                 <form class="form-horizontal">
                   <div class="form-group">
                     <label class="control-label col-sm-4" for="form-username">Username:</label>

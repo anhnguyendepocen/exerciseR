@@ -24,18 +24,24 @@ $HandlerOptions = array("js"=>array("lib/exr_opencpu.js",
                         "css"=>array("lib/codemirror.css",
                                      "lib/circle-progress.css"));
 // Loading the exercise class
-$Handler = new ExerciseR($config, $HandlerOptions);
+$Handler = new ExerciseR($config, true, $HandlerOptions);
 $Handler->site_show_header();
 ?>
 
   <!-- CodeMirror -->
   <script>
-//    // http://simpleupload.michaelcbrook.com/
     $(document).ready(function(){
         <?php
-        $file = sprintf("%s/user-%d/%s/_ocpu_output.html",
-                        $config->get("path", "uploads"),
-                        $_SESSION["user_id"], $_SESSION["exercise_hash"]);
+        // Public exercise?
+        if (property_exists($Handler->_get, "public")) {
+            $file = sprintf("%s/%s/_ocpu_output.html",
+                            $config->get("path", "public"),
+                            "foooooooobar.xml");
+        } else {
+            $file = sprintf("%s/user-%d/%s/_ocpu_output.html",
+                            $config->get("path", "uploads"),
+                            $_SESSION["user_id"], $_SESSION["exercise_hash"]);
+        }
         ?>
         var xmlfile = "<?php print($file); ?>";
         $(document).exr_opencpu(xmlfile);

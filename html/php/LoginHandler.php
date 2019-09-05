@@ -4,14 +4,22 @@ class LoginHandler {
 
     private $DbHandler = NULL;
     private $UserClass = NULL;
+    private $_config = NULL;
+    private $public  = false;
 
-    function __construct($db, $post = NULL) {
+    function __construct($db, $config, $public = false, $post = NULL) {
 
         // Store database object
         $this->DbHandler = $db;
+        $this->_config   = $config;
 
         // Start session
         session_start();
+
+        // Random hash, used for public exercises
+        if (!isset($_SESSION["sessionhash"])) {
+            $_SESSION["sessionhash"] = bin2hex(random_bytes(10));
+        }
 
         // Store post args
         if (is_null($post)) { $post = $_POST; }
@@ -37,9 +45,10 @@ class LoginHandler {
                 $_SESSION["loggedin_as"] = (int)$user_id;
                 $_SESSION["username"]    = $post->username;
             }
+            Header(sprintf("Location: %s/", $this->_config->get("system", "url")));
         }
 
-        if(!isset($_SESSION["user_id"])) { $this->show_login_form(); }
+        if(!$public & !isset($_SESSION["user_id"])) { $this->show_login_form(); }
 
     }
 
@@ -94,42 +103,7 @@ class LoginHandler {
      * Place login somewhere else or use header/footer from theme.
      */
     private function show_login_form() {
-        ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>exerciseR</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="css/bootstrap.4.1.2.min.css">
-    <link rel="stylesheet" href="css/exerciseR.css">
-    <script src="lib/jquery-3.4.1.min.js"></script>
-    <script src="lib/bootstrap-4.2.1.min.js"></script>
-</head>
-<body>
-    <nav id="top-nav" class="navbar navbar-expand-sm bg-primary navbar-light">
-        <img id="exerciserlogo" src="css/logo.svg"></img>
-    </nav>
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <h1>ExerciseR login</h1>
-                Welcome to the (currently experimental) version of the
-                ExerciseR.<br/>
-                <form method="POST">
-                <input type="text" name="username" /><br />
-                <input type="password" name="password" /><br />
-                <input type="submit" value="Login" name="submit" /><br />
-                </form>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
-        <?php
-        // Show login form and stop execution.
-        die(0);
+        Header(sprintf("Location: %s/login.php", $this->_config->get("system", "url")));
     }
 
     /* Check login credentials.

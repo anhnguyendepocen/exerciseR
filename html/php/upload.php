@@ -4,19 +4,30 @@ session_start();
 
 $sucess = false; // Default
 if ($_FILES["file"]["error"] == UPLOAD_ERR_OK) {
-    // basename() may prevent filesystem traversal attacks;
-    // further validation/sanitation of the filename may be appropriate
-    //$destination = $_FILES["file"]["value"];
+    // Use "upload_file_destination" stored in the current session.
     $destination = trim($_SESSION["upload_file_destination"]);
     if (!preg_match("/^\//", $destination)) {
         # TODO Why ../? Makes not too much sense.
         $destination = sprintf("../%s", $destination);
     }
     $sucess = move_uploaded_file($_FILES["file"]["tmp_name"], $destination);
+    // Make a copy of the file
+    $file_extension = pathinfo($destination, PATHINFO_EXTENSION);
+    $dstcopy = preg_replace(sprintf("/.%s$/", $file_extension),
+                            sprintf("_%s.%s", date("U"), $file_extension),
+                            $destination);
+
+    // Console log
+    error_log(sprintf("Uploaded file to: " . $destination));
+    if (!empty($_SESSION["upload_store_copy"])) {
+        error_log($_SESSION["upload_store_copy"]);
+        if ($_SESSION["upload_store_copy"]) {
+            copy($destination, $dstcopy);
+            error_log(sprintf("Copy ded file to: " . $dstcopy));
+        }
+    }
 }
  
-error_log(sprintf("Uploaded file to: " . $destination));
-
 // $output will be converted into JSON 
 if ($sucess) {
     $output = array("file" => $_FILES["file"],

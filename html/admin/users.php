@@ -25,15 +25,17 @@ $Handler->site_show_header();
 require_once("../php/FileHandler.php");
 ?>
 
-  <!-- CodeMirror -->
-  <script>
-    // http://simpleupload.michaelcbrook.com/
-    $(document).ready(function(){
-        $("#admin-table-users").admin_table_users();
-    });
-  </script>
+    <!-- CodeMirror -->
+    <script>
+        // http://simpleupload.michaelcbrook.com/
+        $(document).ready(function(){
+            $("#admin-table-users").admin_table_users();
+        });
+    </script>
 
     <div class="container" id="admin-add-users">
+
+        <h3 style="padding-bottom: 1em;">Administrate Users</h3>
 
         <!-- tab navigation -->
         <ul class="nav nav-tabs">
@@ -53,12 +55,12 @@ require_once("../php/FileHandler.php");
         <div class="tab-content">
             <!-- existing users -->
             <div class="tab-pane container active" id="tab-users">
-            <h3>Existing Users</h3>
-            <div id="admin-table-users"></div>
+                <p><b>Existing Users</b></p>
+                <div id="admin-table-users"></div>
             </div>
             <!-- single user, defined via form -->
             <div class="tab-pane container" id="tab-single">
-                <h3>Add single user</h3>
+                <p><b>Add single user</b></p>
                 <form class="form-horizontal">
                   <div class="form-group">
                     <label class="control-label col-sm-4" for="form-username">Username:</label>
@@ -95,7 +97,7 @@ require_once("../php/FileHandler.php");
             </div>
             <!-- bulk upload, xml upload -->
             <div class="tab-pane container" id="tab-bulk">
-                <h3>Add multiple users</h3>
+                <p><b>Add multiple users</b></p>
                 <?php
                 // Used by 'upload.php' (simpleUpload js): where to store
                 // the uploaded file.
